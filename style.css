@@ -1,0 +1,144 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+  }
+
+  /* Header */
+  header {
+    background-color: #0056b3;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+
+  nav {
+    display: flex;
+    gap: 1rem;
+  }
+
+  nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    background-color: #0073e6;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+
+  nav a:hover {
+    background-color: #004a99;
+  }
+
+  /* Main Content */
+  main {
+    padding: 2rem;
+  }
+
+  /* Cards for Features */
+  .feature-card {
+    background: white;
+    margin: 1rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .feature-card h2 {
+    margin-top: 0;
+  }
+
+  .feature-card p {
+    color: #555;
+  }
+
+  .button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+    background-color: #0056b3;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+
+  .button:hover {
+    background-color: #003d80;
+  }
+
+  /* Upload Section */
+  .upload-section {
+    background: white;
+    margin: 1rem 0;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .upload-section h2 {
+    margin-top: 0;
+  }
+
+  .upload-section input[type="file"] {
+    display: block;
+    margin: 1rem 0;
+  }
+
+  .upload-section button {
+    background-color: #0056b3;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .upload-section button:hover {
+    background-color: #003d80;
+  }
+
+  /* Footer */
+  footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    nav {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .feature-card {
+      margin: 1rem 0;
+    }
+  }
