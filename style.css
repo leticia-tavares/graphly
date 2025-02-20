@@ -68,7 +68,7 @@ body {
     color: #555;
   }
 
-  .button {
+.button {
     display: inline-block;
     padding: 0.5rem 1rem;
     margin-top: 1rem;
@@ -82,7 +82,7 @@ body {
   .button:hover {
     background-color: #003d80;
   }
-
+  
   /* Upload Section */
   .upload-section {
     background: white;

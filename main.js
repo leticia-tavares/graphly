@@ -1,7 +1,8 @@
 // code for the applications's main process
 
-const {app, Menu, BrowserWindow} = require('electron');
+const {app, Menu, BrowserWindow, ipcMain, dialog} = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 let mainWindow;
 
@@ -12,8 +13,8 @@ function createWindow(){
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-           /*  nodeIntegration: true, 
-            contextIsolation: false */
+           // nodeIntegration: true, 
+            contextIsolation: true 
         }
     });
 
@@ -112,7 +113,7 @@ function createWindow(){
     }
   ]; // end of menu template
 
-  // addiotional template logic for macOS
+  // additional menu template logic for macOS
   if (process.platform === 'darwin'){
     const name = app.getName();
     templateMenu.unshift({
@@ -142,6 +143,23 @@ function createWindow(){
         mainWindow = null;
     });
 };
+
+/* ipcMain.on('open-directory-dialog', function(event) {
+    dialog.showOpenDialog({
+        properties: ['openDirectory']
+    }, function(files) {
+        if (files) event.sender.send('selectedItem', files)
+    })
+}); */
+
+// Handle file selection request from Renderer
+ipcMain.handle('select-file', async () => {
+    const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
+    if (canceled) return null;
+  
+    const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
+    return { path: filePaths[0], content: fileContent };
+  });
 
 app.whenReady().then(() => {
     createWindow();

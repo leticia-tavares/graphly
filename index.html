@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Software Interface</title>
   <link rel="stylesheet" href="style.css">
@@ -21,9 +23,13 @@
   <main>
     <section id="upload" class="upload-section">
       <h2>Upload Data</h2>
+      
+      <button id="select-file">Select File</button>
+      <p id="file-path"></p>
+      <!-- <pre id="file-content"></pre> -->
+
       <p>Select and upload your data files to get started.</p>
-      <input type="file" />
-      <button>Upload</button>
+     
     </section>
 
     <section id="features">
@@ -44,5 +50,9 @@
   <footer>
     <p>&copy; 2025 Software Interface. All rights reserved.</p>
   </footer>
+
+  <!-- You can also require other files to run in this process -->
+  <script src="./renderer.js"></script>
+
 </body>
 </html>
