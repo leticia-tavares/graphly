@@ -13,7 +13,7 @@ function createWindow(){
         height: 600,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-           // nodeIntegration: true, 
+            nodeIntegration: false, 
             contextIsolation: true 
         }
     });
@@ -105,8 +105,13 @@ function createWindow(){
         {
           label: 'About',
           click() {
-            console.log('Exibir informações sobre o aplicativo');
-            // Add logic to show 
+            //console.log('Exibir informações sobre o aplicativo');
+            dialog.showMessageBox({
+              type: 'info',
+              buttons: ['Ok'],
+              title: "About",
+              detail: "Desktop application to help with data visualization, transform grid-like data into graphs and to perform community detection."
+            });
           }
         }
       ]
@@ -156,7 +161,14 @@ function createWindow(){
 ipcMain.handle('select-file', async () => {
     const { canceled, filePaths } = await dialog.showOpenDialog({ properties: ['openFile'] });
     if (canceled) return null;
-  
+
+    // Error Dialog for non csv files
+    const fileType = path.extname(filePaths[0]).toLocaleLowerCase();
+    if (fileType !== '.csv'){
+      dialog.showErrorBox('Error! Extension not supported.', 'Please, upload only .csv files.');
+      return null;
+    }
+    
     const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
     return { path: filePaths[0], content: fileContent };
   });
