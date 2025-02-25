@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphly</title>
+  <link rel="stylesheet" href="style.css">
+ 
+</head>
+<body>
+  <header>
+    <h1>Graphly</h1>
+    <nav>
+        <a href="index.html" id="nav-upload">Upload Data</a>
+        <a href="#" id="nav-visualization">Visualization</a>
+        <a href="graphs.html" id="nav-graphs">Graphs</a>
+        <a href="settings" id="nav-settings">Settings</a>
+      </nav>
+<!--     <nav>
+      <a href="#upload">Upload Data</a>
+      <a href="#visualization">Visualization</a>
+      <a href="#graphs">Graphs</a>
+      <a href="#settings">Settings</a>
+    </nav> -->
+  </header>
+
+  <main>
+    <h1>Visualization Page</h1>
+    <a href="index.html">Back to Home</a>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Graphly. Developed by Leticia Tavares. All rights reserved.</p>
+  </footer>
+
+  <!-- You can also require other files to run in this process -->
+  <script src="./renderer.js"></script>
+
+</body>
+</html>

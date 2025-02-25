@@ -6,6 +6,15 @@ const fs = require('fs');
 
 let mainWindow;
 
+// creating directory to store any data
+fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
+  if(err) {
+    return console.error(err);
+  }
+  const dataDir = path.join(__dirname, 'data');
+  console.log("Directory successfuly created!");
+});
+
 function createWindow(){
     // create application mainWindow
         mainWindow = new BrowserWindow({
@@ -135,7 +144,7 @@ function createWindow(){
   }
 
     // load the html file
-    mainWindow.loadFile('index.html');
+    mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
 
     // build the menu
     const menu = Menu.buildFromTemplate(templateMenu);
@@ -149,13 +158,15 @@ function createWindow(){
     });
 };
 
-/* ipcMain.on('open-directory-dialog', function(event) {
-    dialog.showOpenDialog({
-        properties: ['openDirectory']
-    }, function(files) {
-        if (files) event.sender.send('selectedItem', files)
-    })
-}); */
+// Handle navigation request from Renderer
+ipcMain.on('navigate', (event, page) => {
+/*   let pathToPage = path.join(__dirname, `renderer/${page}`);
+  mainWindow.loadFile(pathToPage); */
+
+  console.log(`Navegando para: ${page}`);
+  const pathToPage = path.join(__dirname, 'renderer', page);
+  mainWindow.loadFile(pathToPage).catch(err => console.error(`Erro ao carregar ${page}:`, err));
+});
 
 // Handle file selection request from Renderer
 ipcMain.handle('select-file', async () => {
