@@ -1,28 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Graphly</title>
-  <link rel="stylesheet" href="style.css">
- 
+  <title>Graphly - Generate Graph</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="../tests/style.css">
 </head>
+
 <body>
-  <header>
-    <h1>Graphly</h1>
-    <nav>
-        <a href="index.html" id="nav-upload">Upload Data</a>
-        <a href="visualization.html" id="nav-visualization">Visualization</a>
-        <a href="#" id="nav-graphs">Graphs</a>
-        <a href="settings.html" id="nav-settings">Settings</a>
+  <header class="header">
+    <div class="logo">Graphly</div>
+    <nav class="nav">
+        <a href="index.html" class="nav-link" id="nav-home">Home</a>
+        <a href="visualization.html" class="nav-link" id="nav-visualization">Visualization</a>
+        <a href="#" class="nav-link active" id="nav-graphs">Graphs</a>
+        <a href="settings.html" class="nav-link" id="nav-settings">Settings</a>
       </nav>
   </header>
 
   <main>
-    <h1>Graphs Page</h1>
-    <a href="index.html">Back to Home</a>
+    <section class="section">
+      <h2>Generate Graph from Dataset</h2>
+
+      <form id="graph-form">
+        <div class="form-group">
+          <label for="algorithm">Select Graph Algorithm</label>
+          <select id="algorithm" name="algorithm">
+            <option value="force-directed">Force-Directed Layout</option>
+            <option value="circular">Circular Layout</option>
+            <option value="hierarchical">Hierarchical Layout</option>
+            <option value="random">Random Layout</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="exclude-columns">Exclude Columns</label>
+          <select id="exclude-columns" multiple>
+            <option value="Order ID">Order ID</option>
+            <option value="Customer">Customer</option>
+            <option value="Product">Product</option>
+            <option value="Quantity">Quantity</option>
+            <option value="Total">Total</option>
+          </select>
+          <div class="selected-columns" id="selected-columns"></div>
+        </div>
+
+        <button type="submit" class="btn-primary">Generate Graph</button>
+      </form>
+
+      <div class="graph-display">
+        <h2>Generated Graph</h2>
+        <img src="https://via.placeholder.com/800x500?text=Graph+Visualization" alt="Graph Visualization">
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -30,7 +64,32 @@
   </footer>
 
   <!-- You can also require other files to run in this process -->
-  <script src="./renderer.js"></script>
+  <script src="./renderer.js">
+        const excludeSelect = document.getElementById('exclude-columns');
+    const selectedContainer = document.getElementById('selected-columns');
+
+    function updateSelectedColumns() {
+      selectedContainer.innerHTML = '';
+      Array.from(excludeSelect.selectedOptions).forEach(option => {
+        const tag = document.createElement('div');
+        tag.className = 'column-tag';
+        tag.dataset.column = option.value;
+        tag.innerHTML = `${option.value} <button type="button">×</button>`;
+
+        tag.querySelector('button').addEventListener('click', () => {
+          option.selected = false;
+          updateSelectedColumns();
+        });
+
+        selectedContainer.appendChild(tag);
+      });
+    }
+
+    excludeSelect.addEventListener('change', updateSelectedColumns);
+
+    // Initialize on page load (in case of form resubmission)
+    window.addEventListener('DOMContentLoaded', updateSelectedColumns);
+  </script>
 
 </body>
 </html>

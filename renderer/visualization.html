@@ -1,34 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Graphly</title>
-  <link rel="stylesheet" href="style.css">
- 
+  <title>Graphly - Visualization</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="../tests/style.css">
 </head>
+
 <body>
-  <header>
-    <h1>Graphly</h1>
-    <nav>
-        <a href="index.html" id="nav-upload">Upload Data</a>
-        <a href="#" id="nav-visualization">Visualization</a>
-        <a href="graphs.html" id="nav-graphs">Graphs</a>
-        <a href="settings" id="nav-settings">Settings</a>
-      </nav>
-<!--     <nav>
-      <a href="#upload">Upload Data</a>
-      <a href="#visualization">Visualization</a>
-      <a href="#graphs">Graphs</a>
-      <a href="#settings">Settings</a>
-    </nav> -->
+  <header class="header">
+    <div class="logo">Graphly</div>
+    <nav class="nav">
+      <a href="index.html" class="nav-link" id="nav-home">Home</a>
+      <a href="#" class="nav-link active" id="nav-visualization">Visualization</a>
+      <a href="graphs.html" class="nav-link" id="nav-graphs">Graphs</a>
+      <a href="settings.html" class="nav-link" id="nav-settings">Settings</a>
+    </nav>
   </header>
 
   <main>
-    <h1>Visualization Page</h1>
-    <a href="index.html">Back to Home</a>
+    <section class="section">
+      <h2>Dataset Visualization</h2>
+      <div class="dataset-info">
+        <p><strong>Dataset Name:</strong> Sales Data 2024</p>
+        <p><strong>Rows:</strong> 150</p>
+        <p><strong>Columns:</strong> 5</p>
+        <p><strong>Last Updated:</strong> 2025-02-25</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Product</th>
+            <th>Quantity</th>
+            <th>Total ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1001</td>
+            <td>Alice Johnson</td>
+            <td>Laptop</td>
+            <td>2</td>
+            <td>2400.00</td>
+          </tr>
+          <tr>
+            <td>1002</td>
+            <td>Bob Smith</td>
+            <td>Smartphone</td>
+            <td>1</td>
+            <td>799.00</td>
+          </tr>
+          <tr>
+            <td>1003</td>
+            <td>Carla Ruiz</td>
+            <td>Headphones</td>
+            <td>3</td>
+            <td>450.00</td>
+          </tr>
+          <tr>
+            <td>1004</td>
+            <td>David Lee</td>
+            <td>Monitor</td>
+            <td>1</td>
+            <td>299.99</td>
+          </tr>
+          <tr>
+            <td>1005</td>
+            <td>Eva Green</td>
+            <td>Keyboard</td>
+            <td>4</td>
+            <td>200.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
   </main>
 
   <footer>

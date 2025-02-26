@@ -14,7 +14,7 @@ selectButton.addEventListener('click', async () => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const uploadBtn = document.getElementById("nav-upload");
+  const uploadBtn = document.getElementById("nav-home");
   const visualizationBtn = document.getElementById("nav-visualization");
   const graphsBtn = document.getElementById("nav-graphs");
   const settingsBtn = document.getElementById("nav-settings");

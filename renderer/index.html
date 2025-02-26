@@ -1,54 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Graphly</title>
-  <link rel="stylesheet" href="style.css">
- 
+  <link rel="stylesheet" href="../tests/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
 </head>
+
 <body>
-  <header>
-    <h1>Graphly</h1>
-    <nav>
-      <a href="#" id="nav-upload">Upload Data</a>
-      <a href="#" id="nav-visualization">Visualization</a>
-      <a href="#" id="nav-graphs">Graphs</a>
-      <a href="#" id="nav-settings">Settings</a>
+  <header class="header">
+    <div class="logo">Graphly</div>
+    <!-- <h1>Graphly</h1>-->
+    <nav class="nav">
+      <a href="#" class="nav-link active" id="nav-home">Home</a>
+      <a href="#" class="nav-link" id="nav-visualization">Visualization</a>
+      <a href="#" class="nav-link" id="nav-graphs">Graphs</a>
+      <a href="#" class="nav-link" id="nav-settings">Settings</a>
     </nav>
-<!--     <nav>
-      <a href="#upload">Upload Data</a>
-      <a href="#visualization">Visualization</a>
-      <a href="#graphs">Graphs</a>
-      <a href="#settings">Settings</a>
-    </nav> -->
   </header>
 
   <main>
-    <section id="upload" class="upload-section">
+    <section id="upload" class="section upload-section">
       <h2>Upload Data</h2>
-      
-      <button id="select-file">Select File</button>
+      <button id="select-file" class="btn-primary">Select File</button>
       <p id="file-path"></p>
-      <!-- <pre id="file-content"></pre> -->
-
-      <p>Select and upload your data files to get started.</p>
-     
+      <p>Select and upload your data set to get started.</p>
     </section>
 
-    <section id="features">
+    <section id="features" class="section features">
       <div class="feature-card">
         <h2>Visualization</h2>
         <p>View your data in structured formats with sorting and filtering options.</p>
-        <a href="#visualization" class="button">Go to Visualization</a>
+        <a href="visualization.html" class="btn-secondary">Get Started</a>
       </div>
 
       <div class="feature-card">
         <h2>Graphs</h2>
         <p>Create customized graphs to analyze your data visually.</p>
-        <a href="#graphs" class="button">Go to Graphs</a>
+        <a href="graphs.html" class="btn-secondary">Generate Graph</a>
       </div>
     </section>
   </main>

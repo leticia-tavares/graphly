@@ -1,28 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Graphly</title>
-  <link rel="stylesheet" href="style.css">
- 
+  <title>Graphly - Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+  <link rel="stylesheet" href="../tests/style.css">
 </head>
+
 <body>
-  <header>
-    <h1>Graphly</h1>
-    <nav>
-        <a href="index.html" id="nav-upload">Upload Data</a>
-        <a href="visualization.html" id="nav-visualization">Visualization</a>
-        <a href="graphs.html" id="nav-graphs">Graphs</a>
-        <a href="#" id="nav-settings">Settings</a>
+  <header class="header">
+    <div class="logo">Graphly</div>
+    <nav class="nav">
+        <a href="index.html" class="nav-link" id="nav-upload">Home</a>
+        <a href="visualization.html" class="nav-link" id="nav-visualization">Visualization</a>
+        <a href="graphs.html" class="nav-link" id="nav-graphs">Graphs</a>
+        <a href="#" class="nav-link active" id="nav-settings">Settings</a>
       </nav>
   </header>
 
   <main>
-    <h1>Settings Page</h1>
-    <a href="index.html">Back to Home</a>
+    <section class="section">
+      <h2>Settings</h2>
+      <form>
+        <div class="form-group">
+          <label for="theme">Theme</label>
+          <select id="theme" name="theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="system">System Default</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="refresh-rate">Auto-refresh Rate (seconds)</label>
+          <input type="number" id="refresh-rate" name="refresh-rate" min="1" max="60" value="10">
+        </div>
+
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your name">
+        </div>
+
+        <button type="submit" class="btn-primary">Save Settings</button>
+      </form>
+    </section>
   </main>
 
   <footer>
