@@ -1,6 +1,6 @@
 // code for the applications's main process
 
-const {app, Menu, BrowserWindow, ipcMain, dialog} = require('electron');
+const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -20,13 +20,17 @@ function createWindow(){
         mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
+        icon: path.join(__dirname, '/assets/logo-cicle.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false, 
             contextIsolation: true 
         }
     });
-
+   
+    if(process.platform === 'darwin'){
+      app.dock.setIcon(path.join(__dirname, '/assets/logo-circle.png'));
+    }
 
   // create the application's menu template for all OS
   const templateMenu = [
@@ -166,6 +170,15 @@ ipcMain.on('navigate', (event, page) => {
   console.log(`Navegando para: ${page}`);
   const pathToPage = path.join(__dirname, 'renderer', page);
   mainWindow.loadFile(pathToPage).catch(err => console.error(`Erro ao carregar ${page}:`, err));
+});
+
+// Recebe o tema do frontend e aplica no Electron
+ipcMain.on('set-theme', (event, theme) => {
+  if (theme === 'system') {
+    nativeTheme.themeSource = 'system';
+  } else {
+    nativeTheme.themeSource = theme;
+  }
 });
 
 // Handle file selection request from Renderer
