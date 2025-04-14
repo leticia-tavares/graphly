@@ -1,3 +1,7 @@
+/* This file is responsible for Electron's renderer process. 
+   It is used to handle the application's events and to interact with the main process. 
+   The preload.js file is used to expose the ipcRenderer object to the renderer process.
+*/
 const selectButton = document.getElementById('select-file');
 const filePathDisplay = document.getElementById('file-path');
 // const fileContentDisplay = document.getElementById('file-content');
@@ -15,6 +19,7 @@ selectButton.addEventListener('click', async () => {
 
 document.addEventListener("DOMContentLoaded", () => {
   const uploadBtn = document.getElementById("nav-home");
+  const ovewviewBtn = document.getElementById("nav-overview");
   const visualizationBtn = document.getElementById("nav-visualization");
   const graphsBtn = document.getElementById("nav-graphs");
   const settingsBtn = document.getElementById("nav-settings");
@@ -22,6 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (uploadBtn) {
     uploadBtn.addEventListener("click", () => {
       window.electronAPI.navigate("index.html");
+    });
+  }
+
+  if (ovewviewBtn) {
+    ovewviewBtn.addEventListener("click", () => {
+      window.electronAPI.navigate("overview.html");
     });
   }
 
@@ -44,3 +55,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
+
+

@@ -1,4 +1,8 @@
-// preload.js
+/*
+ This file is responsible for intermediaanting the communication between the main process and the renderer process
+ It is used to expose the ipcRenderer object to the renderer process
+*/
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {

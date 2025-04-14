@@ -30,6 +30,25 @@ body {
   box-sizing: border-box;
 }
 
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.chart-box {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
+}
+
+.chart-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
 /* body {
   font-family: 'Inter', sans-serif;
   background-color: #f9f9f9;
@@ -59,9 +78,22 @@ body {
   font-weight: 700;
 }
 
+.chart {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 15px;
+  min-height: 350px;
+}
+
 .nav {
   display: flex;
   gap: 1rem;
+}
+
+.nav img{
+  vertical-align: middle;
+  margin-right: 5px;
 }
 
 .nav-link {

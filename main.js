@@ -1,5 +1,6 @@
-// code for the applications's main process
-
+/* Code for the applications's main process (backend)
+   This file is responsible for creating the application's window and handling the application's events
+*/
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');

@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <meta http-equiv="Content-Security-Policy" 
+  content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Graphly</title>
   <link rel="stylesheet" href="style.css">
@@ -18,10 +19,16 @@
       <span>Graphly</span>
     </div>
     <nav class="nav">
-      <a href="#" class="nav-link active" id="nav-home">Home</a>
-      <a href="#" class="nav-link" id="nav-visualization">Visualization</a>
-      <a href="#" class="nav-link" id="nav-graphs">Graphs</a>
-      <a href="#" class="nav-link" id="nav-settings">Settings</a>
+      <a href="#" class="nav-link active" id="nav-home">
+        <img src="../assets/icons/upload.png" height="20">Home</a>
+      <a href="#" class="nav-link" id="nav-overview">
+          <img src="../assets/icons/bar-graph2.png" height="20">Overview</a>
+      <a href="#" class="nav-link" id="nav-visualization">
+        <img src="../assets/icons/bar-graph.png" height="20">Visualization</a>
+      <a href="#" class="nav-link" id="nav-graphs">
+       <img src="../assets/icons/data-flow copy.png" height="20">Graphs</a>
+      <a href="#" class="nav-link" id="nav-settings">
+        <img src="../assets/icons/settings.png" height="20">Settings</a>
     </nav>
   </header>
 
@@ -46,12 +53,13 @@
         <a href="graphs.html" class="btn-secondary">Generate Graph</a>
       </div>
     </section>
+
   </main>
 
   <footer>
     <p>&copy; 2025 Graphly. Developed by Leticia Tavares. All rights reserved.</p>
   </footer>
-
+  
   <!-- You can also require other files to run in this process -->
   <script src="./renderer.js"></script>
 
