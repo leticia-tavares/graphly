@@ -19,5 +19,8 @@
   "description": "Desktop application to help with data visualization, transform grid-like data into graphs and to perform community detection.",
   "devDependencies": {
     "electron": "^34.2.0"
+  },
+  "dependencies": {
+    "apexcharts": "^4.5.0"
   }
 }

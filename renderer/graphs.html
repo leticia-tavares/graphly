@@ -7,7 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Graphly - Generate Graph</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  -->
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -47,7 +47,7 @@
         </div>
 
         <div class="form-group">
-          <label for="exclude-columns">Exclude Columns</label>
+          <label for="exclude-columns">Choose columns to exclude</label>
           <select id="exclude-columns" multiple>
             <option value="Order ID">Order ID</option>
             <option value="Customer">Customer</option>
@@ -60,10 +60,12 @@
 
         <button type="submit" class="btn-primary">Generate Graph</button>
       </form>
+    </section>
 
+    <section class="section">
       <div class="graph-display">
         <h2>Generated Graph</h2>
-        <img src="https://via.placeholder.com/800x500?text=Graph+Visualization" alt="Graph Visualization">
+        <img src="../data/result.png" alt="Your generated graph">
       </div>
     </section>
   </main>
@@ -73,31 +75,8 @@
   </footer>
 
   <!-- You can also require other files to run in this process -->
-  <script src="./renderer.js">
-        const excludeSelect = document.getElementById('exclude-columns');
-    const selectedContainer = document.getElementById('selected-columns');
-
-    function updateSelectedColumns() {
-      selectedContainer.innerHTML = '';
-      Array.from(excludeSelect.selectedOptions).forEach(option => {
-        const tag = document.createElement('div');
-        tag.className = 'column-tag';
-        tag.dataset.column = option.value;
-        tag.innerHTML = `${option.value} <button type="button">×</button>`;
-
-        tag.querySelector('button').addEventListener('click', () => {
-          option.selected = false;
-          updateSelectedColumns();
-        });
-
-        selectedContainer.appendChild(tag);
-      });
-    }
-
-    excludeSelect.addEventListener('change', updateSelectedColumns);
-
-    // Initialize on page load (in case of form resubmission)
-    window.addEventListener('DOMContentLoaded', updateSelectedColumns);
+  <script src="../src/generateGraph.js">
+ 
   </script>
 
 </body>

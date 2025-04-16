@@ -1,5 +1,6 @@
 /* Atualização do style.css com design moderno */
 
+/* Reset CSS */
 :root {
   --background-color: #ffffff;
   --text-color: #333333;
@@ -15,15 +16,16 @@
   --text-color: auto;
 }
 
+/* Estilos globais */
 body {
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background 0.3s, color 0.3s;
-  font-family: 'Inter', sans-serif;
+  /* font-family: 'Inter', sans-serif; */
+  font-family: 'Poppins', sans-serif;
   line-height: 1.6;
 }
 
-/* Reset e fontes */
 * {
   margin: 0;
   padding: 0;
@@ -55,20 +57,61 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background: rgba(0, 86, 179, 0.9);
-  color: #fff;
+  background: linear-gradient(to right, #0056b3, #007bff);
+  color: #ffffff;
   position: sticky;
   top: 0;
   z-index: 1000;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Logo */
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem; /* Espaçamento entre a imagem e o texto */
-  font-size: 1.8rem;
+  gap: 0.75rem;
+  font-size: 1.6rem;
   font-weight: 700;
+  color: #ffffff;
+}
+
+.logo img {
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Navegação */
+.nav {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #ffffff;
+  text-decoration: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: 10px;
+  transition: background 0.3s ease, color 0.3s ease;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.nav-link.active {
+  background-color: #ffffff;
+  color: #0056b3;
+  font-weight: 600;
 }
 
 .chart {
@@ -77,28 +120,6 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   padding: 15px;
   min-height: 350px;
-}
-
-.nav {
-  display: flex;
-  gap: 1rem;
-}
-
-.nav img{
-  vertical-align: middle;
-  margin-right: 5px;
-}
-
-.nav-link {
-  color: #fff;
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  transition: background-color 0.3s ease;
-}
-
-.nav-link:hover, .nav-link.active {
-  background-color: #004a99;
 }
 
 /* Botões */
@@ -144,9 +165,85 @@ body {
 
 .upload-section {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
+  padding: 2.5rem 2rem;
+  /* max-width: 1280px; */
+}
+
+.upload-section h2 {
+  color: #0d47a1;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.upload-section h3 {
+  text-align: center;
+  color: #0d47a1;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.upload-section .requirement-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.upload-section .requirement-list {
+  text-align: left;
+  max-width: 500px;
+  margin: 0 auto 1.5rem auto;
+}
+
+.upload-section .requirement-list li {
+  font-size: 1.05rem;
+  margin-bottom: 0.6rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-actions {
+  margin-top: 1rem;
+}
+
+.getting-started  {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  margin: 2rem auto;
+  text-align: left;
+}
+
+.getting-started h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  color: #0d47a1;
+  text-align: center;
+}
+
+.getting-started ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: emoji-counter;
+}
+
+.getting-started li {
+  font-size: 1.05rem;
+  margin-bottom: 0.8rem;
+  padding-left: 1.8rem;
+  position: relative;
+}
+
+.getting-started li::before {
+  content: attr(data-emoji);
+  position: absolute;
+  left: 0;
+  font-size: 1.2rem;
 }
 
 h2 {
@@ -169,6 +266,7 @@ h2 {
   font-size: 1rem;
 }
 
+/* Tabela */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -208,7 +306,7 @@ tr:hover {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Select */
+/* Formulários */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -218,7 +316,7 @@ label {
   margin-bottom: 0.6rem;
   font-weight: 600;
 }
-
+/* Select */
 select {
   width: 100%;
   padding: 0.7rem;
@@ -273,6 +371,7 @@ select {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Formulários */
 input[type="text"], input[type="number"], select {
   width: 100%;
   padding: 0.7rem;
@@ -280,6 +379,7 @@ input[type="text"], input[type="number"], select {
   border-radius: 8px;
 }
 
+/* Footer */
 footer {
   background-color: #222;
   color: #bbb;
@@ -289,15 +389,59 @@ footer {
   margin-top: 2rem;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .nav {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+/* Importação de fontes */
+
+/* Poppins */
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Poppins';
+  src: url('../assets/fonts/Poppins-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Inter */
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('../assets/fonts/Inter-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Flexbox para o layout */
+html, body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }

@@ -19,8 +19,10 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
 function createWindow(){
     // create application mainWindow
         mainWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
+          width: 1280,
+          height: 800,
+          minWidth: 1024,
+          minHeight: 720,
         icon: path.join(__dirname, '/assets/logo-cicle.png'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),

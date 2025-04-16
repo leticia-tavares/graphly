@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Graphly</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"> 
+  <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  -->
 </head>
 
 <body>
@@ -33,24 +33,29 @@
   </header>
 
   <main>
-    <section id="upload" class="section upload-section">
-      <h2>Upload Data</h2>
-      <button id="select-file" class="btn-primary">Select File</button>
-      <p id="file-path"></p>
-      <p>Select and upload your data set to get started.</p>
+    <section id="getting-started" class="section getting-started">
+      <h2>Getting Started</h2>
+      <ol>
+        <li data-emoji="📁">Upload your data set.</li>
+        <li data-emoji="🔍" >View statistics and visualizations in the 'Overview' page.</li>
+        <li data-emoji="📊" >Visualize your data in structured formats.</li>
+        <li data-emoji="🧠" >Create customized graphs to analyze your data visually.</li>
+        <li data-emoji="🧩" >Detect communities within your data.</li>
+      </ol>
     </section>
 
-    <section id="features" class="section features">
-      <div class="feature-card">
-        <h2>Visualization</h2>
-        <p>View your data in structured formats with sorting and filtering options.</p>
-        <a href="visualization.html" class="btn-secondary">Get Started</a>
-      </div>
-
-      <div class="feature-card">
-        <h2>Graphs</h2>
-        <p>Create customized graphs to analyze your data visually.</p>
-        <a href="graphs.html" class="btn-secondary">Generate Graph</a>
+    <section id="upload-section" class="section upload-section">
+      <h2>📤Select and upload your dataset to get started</h2>
+      <h3>📋 Dataset Requirements</h3>
+      <ul class="requirement-list">
+        <li>✔️ CSV file format</li>
+        <li>✔️ First row should contain column headers</li>
+        <li>✔️ Data should be clean and structured</li>
+      </ul>
+      
+      <div class="upload-actions">
+        <button id="select-file" class="btn-primary">📁 Select File</button>
+        <p id="upload-result"></p>
       </div>
     </section>
 

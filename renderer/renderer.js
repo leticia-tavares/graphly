@@ -3,23 +3,22 @@
    The preload.js file is used to expose the ipcRenderer object to the renderer process.
 */
 const selectButton = document.getElementById('select-file');
-const filePathDisplay = document.getElementById('file-path');
-// const fileContentDisplay = document.getElementById('file-content');
+const filePathDisplay = document.getElementById('upload-result');
 
+// Upload and handle file selection 
 selectButton.addEventListener('click', async () => {
   const fileData = await window.electronAPI.selectFile();
   if (fileData) {
     filePathDisplay.textContent = `Path: ${fileData.path}`;
-    // fileContentDisplay.textContent = `Content:\n${fileData.content}`;
   } else {
     filePathDisplay.textContent = 'No file selected.';
-    // fileContentDisplay.textContent = '';
   }
 });
 
+// Navigation buttons
 document.addEventListener("DOMContentLoaded", () => {
   const uploadBtn = document.getElementById("nav-home");
-  const ovewviewBtn = document.getElementById("nav-overview");
+  const overviewBtn = document.getElementById("nav-overview");
   const visualizationBtn = document.getElementById("nav-visualization");
   const graphsBtn = document.getElementById("nav-graphs");
   const settingsBtn = document.getElementById("nav-settings");
@@ -30,8 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  if (ovewviewBtn) {
-    ovewviewBtn.addEventListener("click", () => {
+  if (overviewBtn) {
+    overviewBtn.addEventListener("click", () => {
       window.electronAPI.navigate("overview.html");
     });
   }
@@ -55,5 +54,3 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 });
-
-
