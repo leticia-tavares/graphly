@@ -9,6 +9,7 @@
   <title>Graphly - Visualization</title>
   <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  -->
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
 
 <body>
@@ -33,63 +34,29 @@
 
   <main>
     <section class="section">
-      <h2>Dataset Visualization</h2>
-      <div class="dataset-info">
-        <p><strong>Dataset Name:</strong> Sales Data 2024</p>
-        <p><strong>Rows:</strong> 150</p>
-        <p><strong>Columns:</strong> 5</p>
-        <p><strong>Last Updated:</strong> 2025-02-25</p>
-      </div>
+      <h2>Dataset Overview</h2>
+      <p id="upload-result"></p>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Customer</th>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Total ($)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1001</td>
-            <td>Alice Johnson</td>
-            <td>Laptop</td>
-            <td>2</td>
-            <td>2400.00</td>
-          </tr>
-          <tr>
-            <td>1002</td>
-            <td>Bob Smith</td>
-            <td>Smartphone</td>
-            <td>1</td>
-            <td>799.00</td>
-          </tr>
-          <tr>
-            <td>1003</td>
-            <td>Carla Ruiz</td>
-            <td>Headphones</td>
-            <td>3</td>
-            <td>450.00</td>
-          </tr>
-          <tr>
-            <td>1004</td>
-            <td>David Lee</td>
-            <td>Monitor</td>
-            <td>1</td>
-            <td>299.99</td>
-          </tr>
-          <tr>
-            <td>1005</td>
-            <td>Eva Green</td>
-            <td>Keyboard</td>
-            <td>4</td>
-            <td>200.00</td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="features" class="section features">
+        <div class="feature-card">
+          <h3>Number Of Rows</h3>
+          <p>View your data in structured formats with sorting and filtering options.</p>
+        </div>
+
+        <div class="feature-card">
+          <h3>Number of Columns</h3>
+          <p>Create customized graphs to analyze your data visually.</p>
+        </div>
+      </div>
     </section>
+
+    <section class="section">
+      <h2>Data Preview</h2>
+      <div class="table-container">
+        <table id="data-table"></table>
+      </div>
+    </section>
+
   </main>
 
   <footer>
@@ -97,7 +64,7 @@
   </footer>
 
   <!-- You can also require other files to run in this process -->
-  <script src="./renderer.js"></script>
+  <script src="../src/showData.js"></script>
 
 </body>
 </html>

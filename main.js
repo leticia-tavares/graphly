@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 
 let mainWindow;
+let savedDataset = null;
 
 // creating directory to store any data
 fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
@@ -199,6 +200,18 @@ ipcMain.handle('select-file', async () => {
     const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
     return { path: filePaths[0], content: fileContent };
   });
+
+ipcMain.on('save-dataset', (event, data) => {
+  // recebe e armazena o conteudo do dataset
+  savedDataset = data;
+});
+
+ipcMain.handle('load-dataset', () => {
+  if (savedDataset){
+    return savedDataset;
+  } 
+  return null;
+})
 
 app.whenReady().then(() => {
     createWindow();

@@ -8,5 +8,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   selectFile: () => ipcRenderer.invoke('select-file'),
   navigate: (page) => ipcRenderer.send('navigate', page),
-  setTheme: (theme) => ipcRenderer.send('set-theme', theme)
+  setTheme: (theme) => ipcRenderer.send('set-theme', theme),
+
+  // data set
+  saveDataset: (data) => ipcRenderer.send('save-dataset', data),
+  loadDataset: () => ipcRenderer.invoke('load-dataset')
 });

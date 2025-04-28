@@ -5,15 +5,32 @@
 const selectButton = document.getElementById('select-file');
 const filePathDisplay = document.getElementById('upload-result');
 
+selectButton.addEventListener('click', async () => {
+  const fileData = await window.electronAPI.selectFile();
+  if (fileData) {
+    filePathDisplay.textContent = `Path: ${fileData.path}`;
+    // salva no processo principal
+    window.electronAPI.saveDataset(fileData);
+    // vai para overview
+    window.electronAPI.navigate('overview.html');
+  } else {
+    filePathDisplay.textContent = 'No file selected.';
+  }
+});
+/* 
 // Upload and handle file selection 
 selectButton.addEventListener('click', async () => {
   const fileData = await window.electronAPI.selectFile();
   if (fileData) {
     filePathDisplay.textContent = `Path: ${fileData.path}`;
+
+    const dataset = parseCSV(fileData.content);
+    renderTable(dataset);
   } else {
     filePathDisplay.textContent = 'No file selected.';
+    dataTable.innerHTML = '';
   }
-});
+}); */
 
 // Navigation buttons
 document.addEventListener("DOMContentLoaded", () => {
