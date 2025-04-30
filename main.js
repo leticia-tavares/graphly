@@ -4,6 +4,7 @@
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
+const dfd = require('danfojs-node');
 
 let mainWindow;
 let savedDataset = null;
@@ -16,6 +17,11 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   const dataDir = path.join(__dirname, 'data');
   console.log("Directory successfuly created!");
 });
+
+async function loadCSV(filePath) {
+  const df = await dfd.readCSV(filePath);
+  return df;
+}
 
 function createWindow(){
     // create application mainWindow
@@ -200,6 +206,12 @@ ipcMain.handle('select-file', async () => {
     const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
     return { path: filePaths[0], content: fileContent };
   });
+
+ipcMain.handle('show-dialog', async (event, dialogOptions) => {
+  const result = await dialog.showMessageBox(dialogOptions);
+  return result;
+});
+  
 
 ipcMain.on('save-dataset', (event, data) => {
   // recebe e armazena o conteudo do dataset

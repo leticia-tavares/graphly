@@ -1,33 +1,75 @@
-//  (NOVO ARQUIVO)
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  const histogram = document.querySelector("#histograma");
+  const correlation = document.querySelector("#correlacao");
+  const bars = document.querySelector("#barras");
+  const boxplot = document.querySelector("#boxplot");
 
-    // Dados dummy para exemplo
-    const histogramData = [10, 20, 30, 20, 15, 30, 40, 60];
+  const dataset = await window.electronAPI.loadDataset();
 
-    const correlacaoData = {
-      x: [10, 20, 30, 40, 50],
-      y: [15, 25, 35, 45, 55]
-    };
+  if (!dataset || !dataset.content) {
+    //alert("Dataset não carregado! Você precisa selecionar um dataset primeiro.");
+    const response = await window.electronAPI.showDialog({
+      type: 'info',
+      buttons: ['OK'],
+      title: 'Warning',
+      message: 'Please upload your dataset first.'
+    });
+    console.log('Resposta do diálogo:', response);
+    window.electronAPI.navigate('index.html'); // Redireciona para upload
+    return;
+  }
 
-    const barChartData = {
-      categories: ['Janeiro', 'Fevereiro', 'Março', 'Abril'],
-      series: [45, 52, 38, 24]
-    };
-    
-    const boxplotData = [
-      { x: 'Dataset A', y: [54, 66, 69, 75, 88] },
-      { x: 'Dataset B', y: [43, 65, 67, 78, 84] },
-    ];
-  
-    // Gráfico: Histograma
-    new ApexCharts(document.querySelector("#histograma"), {
+  Papa.parse(dataset.content, {
+    header: true,
+    dynamicTyping: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      console.log('Resultados completos do PapaParse:', results);
+
+      const data = results.data;
+      const columns = results.meta.fields;
+
+      if (columns.length < 2) {
+        console.error('CSV deve ter no mínimo duas colunas.');
+        return;
+      }
+
+      const histogramData = data.map(row => row[columns[0]]);
+      const correlacaoData = {
+        x: data.map(row => row[columns[0]]),
+        y: data.map(row => row[columns[1]])
+      };
+      const barChartData = {
+        categories: data.slice(0, 4).map(row => row[columns[0]]),
+        series: data.slice(0, 4).map(row => row[columns[1]])
+      };
+      const boxplotData = [
+        { x: columns[0], y: data.map(row => row[columns[0]]) },
+        { x: columns[1], y: data.map(row => row[columns[1]]) }
+      ];
+
+      console.log("Dados preparados para gráficos:", {
+        histogramData,
+        correlacaoData,
+        barChartData,
+        boxplotData
+      });
+
+      renderCharts(histogramData, correlacaoData, barChartData, boxplotData);
+    },
+    error: (err) => {
+      console.error('Erro ao fazer parsing do CSV:', err);
+    }
+  });
+
+  function renderCharts(histogramData, correlacaoData, barChartData, boxplotData) {
+    new ApexCharts(histogram, {
       chart: { type: 'bar' },
       series: [{ name: 'Frequência', data: histogramData }],
       title: { text: 'Histograma' },
     }).render();
-  
-    // Gráfico: Correlação (Scatter Plot)
-    new ApexCharts(document.querySelector("#correlacao"), {
+
+    new ApexCharts(correlation, {
       chart: { type: 'scatter' },
       series: [{
         name: 'Correlação',
@@ -37,20 +79,18 @@ document.addEventListener('DOMContentLoaded', () => {
       yaxis: { title: { text: 'Y' } },
       title: { text: 'Gráfico de Correlação' },
     }).render();
-  
-    // Gráfico: Barras
-    new ApexCharts(document.querySelector("#barras"), {
+
+    new ApexCharts(bars, {
       chart: { type: 'bar' },
       series: [{ name: 'Valores', data: barChartData.series }],
       xaxis: { categories: barChartData.categories },
       title: { text: 'Gráfico de Barras' },
     }).render();
-  
-    // Gráfico: Boxplot
-    new ApexCharts(document.querySelector("#boxplot"), {
+
+    new ApexCharts(boxplot, {
       chart: { type: 'boxPlot' },
       series: [{ name: 'Distribuição', data: boxplotData }],
       title: { text: 'Boxplot' },
     }).render();
-  
-  });
+  }
+});

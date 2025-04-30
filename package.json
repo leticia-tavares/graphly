@@ -21,6 +21,8 @@
     "electron": "^34.2.0"
   },
   "dependencies": {
-    "apexcharts": "^4.5.0"
+    "apexcharts": "^4.5.0",
+    "danfojs-node": "^0.2.8",
+    "papaparse": "^5.5.2"
   }
 }

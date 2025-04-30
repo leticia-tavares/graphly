@@ -1,10 +1,18 @@
-// overview.js
+ // overview.js
 document.addEventListener('DOMContentLoaded', async () => {
 
     // carrega o dataset salvo no main process
     const dataset = await window.electronAPI.loadDataset();
     if (!dataset) {
-        document.getElementById('upload-result').textContent = 'Please upload your dataset first.';
+        const response = await window.electronAPI.showDialog({
+            type: 'info',
+            buttons: ['OK'],
+            title: 'Warning',
+            message: 'Please upload your dataset first.'
+          });
+        console.log('Resposta do diálogo:', response);
+        window.electronAPI.navigate('index.html'); // Redireciona para upload
+
         return;
     }
 
@@ -56,4 +64,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     td.textContent = '...';
  
 
-}); 
+});  
