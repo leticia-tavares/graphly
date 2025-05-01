@@ -4,7 +4,6 @@
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
-const dfd = require('danfojs-node');
 
 let mainWindow;
 let savedDataset = null;
