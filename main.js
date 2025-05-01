@@ -17,10 +17,10 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   console.log("Directory successfuly created!");
 });
 
-async function loadCSV(filePath) {
-  const df = await dfd.readCSV(filePath);
-  return df;
-}
+// async function loadCSV(filePath) {
+//   const df = await dfd.readCSV(filePath);
+//   return df;
+// }
 
 function createWindow(){
     // create application mainWindow
@@ -29,8 +29,9 @@ function createWindow(){
           height: 800,
           minWidth: 1024,
           minHeight: 720,
-        icon: path.join(__dirname, '/assets/logo-cicle.png'),
-        webPreferences: {
+          // icon: path.join(__dirname, '/assets/logo-circle.png'),
+          icon: path.join(__dirname, '/assets/logo-circle.ico'),
+          webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false, 
             contextIsolation: true 

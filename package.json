@@ -1,11 +1,26 @@
 {
   "name": "Graphly",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "build": "electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "build": {
+    "appId": "com.graphly.name",
+    "productName": "Graphly",
+    "icon": "assets/icons/app-icon", 
+    "win": {
+      "icon": "assets/logo-circle.ico"
+    },
+    "mac": {
+      "icon": "assets/logo-circle.icns"
+    },
+    "linux": {
+      "icon": "assets/icons"
+    }
+  },  
   "keywords": [
     "Node.js",
     "Electron",
