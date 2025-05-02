@@ -32,25 +32,6 @@ body {
   box-sizing: border-box;
 }
 
-.grid-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-.chart-box {
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 15px;
-}
-
-.chart-title {
-  font-weight: bold;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
 /* Cabeçalho */
 .header {
   display: flex;
@@ -120,6 +101,7 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   padding: 15px;
   min-height: 350px;
+  margin: 2rem auto;
 }
 
 /* Botões */
@@ -262,17 +244,7 @@ h2 {
 }
 
 /* Dataset */
-.dataset-info {
-  margin-bottom: 2rem;
-  background-color: #e3f2fd;
-  padding: 1rem;
-  border-radius: 8px;
-}
 
-.dataset-info p {
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-}
 
 /* Tabela */
 table {
@@ -411,19 +383,6 @@ select {
   font-weight: 500;
   color: #333;
 }
-
-/* .feature-card {
-  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-  padding: 2rem;
-  border-radius: 16px;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-} */
 
 /* Formulários */
 input[type="text"], input[type="number"], select {
