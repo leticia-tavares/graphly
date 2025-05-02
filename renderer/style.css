@@ -21,8 +21,8 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background 0.3s, color 0.3s;
-  /* font-family: 'Inter', sans-serif; */
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Inter', sans-serif;
+  /* font-family: 'Poppins', sans-serif; */
   line-height: 1.6;
 }
 
@@ -157,7 +157,7 @@ body {
 .section {
   padding: 3rem 2rem;
   max-width: 1200px;
-  margin: auto;
+  margin: 2rem auto;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -301,21 +301,6 @@ tr:hover {
   background-color: #e0f7fa;
 }
 
-/* Graph Display */
-/* .graph-display {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.graph-display img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-} */
-
-
 /* CONTEÚDO PRINCIPAL */
 .main-content {
   flex: 1;
@@ -391,15 +376,43 @@ select {
   margin-top: 2rem;
 }
 
-/* .features h2 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: #0d47a1;
-  text-align: center;
-} */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
 
-.feature-card {
+.data-card {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  width: 220px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.data-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.data-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #0d47a1;
+  margin-bottom: 0.5rem;
+}
+
+.data-card p {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #333;
+}
+
+/* .feature-card {
   background: linear-gradient(135deg, #e3f2fd, #bbdefb);
   padding: 2rem;
   border-radius: 16px;
@@ -410,7 +423,7 @@ select {
 .feature-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
+} */
 
 /* Formulários */
 input[type="text"], input[type="number"], select {
@@ -454,6 +467,17 @@ footer {
   font-style: normal;
 }
 
+/* Flexbox para o layout */
+html, body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
 /* Inter */
 @font-face {
   font-family: 'Inter';
@@ -474,15 +498,4 @@ footer {
   src: url('../assets/fonts/Inter-Bold.woff2') format('woff2');
   font-weight: 700;
   font-style: normal;
-}
-
-/* Flexbox para o layout */
-html, body {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-main {
-  flex: 1;
 }

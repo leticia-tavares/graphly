@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             title: 'Warning',
             message: 'Please upload your dataset first.'
           });
-        console.log('Resposta do diálogo:', response);
+        // console.log('Resposta do diálogo:', response);
         window.electronAPI.navigate('index.html'); // Redireciona para upload
 
         return;
@@ -32,20 +32,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             // --- 2) Monta objeto de metadata ---
             const metadata = {};
             columns.forEach(col => {
-              const valores    = rows.map(r => r[col]);
-              const missing    = valores.filter(v => v == null || v === '').length;
-              const nonNull    = valores.filter(v => v != null && v !== '');
+              const values    = rows.map(r => r[col]);
+              const missing    = values.filter(v => v == null || v === '').length;
+              const nonNull    = values.filter(v => v != null && v !== '');
               const uniqueCount= new Set(nonNull).size;
               const tipos      = new Set(nonNull.map(v => typeof v));
               const type       = tipos.size === 1 ? [...tipos][0] : 'mixed';
+
+              const mean = (arr) => {
+                const sum = arr.reduce((acc, val) => acc + parseFloat(val), 0);
+                return (sum / arr.length).toFixed(2);
+              }
+
+              const min = (arr) => {
+                const min = Math.min(...arr.map(v => parseFloat(v)));
+                return min.toFixed(2);
+              }
+
+              const max = (arr) => {
+                const max = Math.max(...arr.map(v => parseFloat(v)));
+                return max.toFixed(2);
+              }
   
               metadata[col] = {
                 type,
                 uniqueValues: uniqueCount,
-                missingValues: missing
+                missingValues: missing,
+                mean: type === 'number' ? mean(nonNull) : null,
+                min: type === 'number' ? min(nonNull) : null,
+                max: type === 'number' ? max(nonNull) : null
               };
             });
-  
+
+            console.log('file size:', dataset.size);
+    
+            showStatistics(columns, dataset.size, metadata, rows);
+
             // --- 3) Converte em array para montar a tabela ---
             const metaArray = columns.map(col => ({
               Column: col,
@@ -57,30 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             const infoTable = document.getElementById('info-table');
 
            // --- 4) Exibe na tabela ---
-            showInfoTable(metaArray,
-                          ['Column','Type','Unique Values','Missing Values'],
-                          infoTable);
+            showInfoTable(metaArray, ['Column','Type','Unique Values','Missing Values'], infoTable);
        }
-           
     });
-
-    //statistics
-    const stats = {
-        rows: data.length,
-        columns: Object.keys(data[0]).length,
-        types: Object.fromEntries(
-            Object.entries(data[0]).map(([key, value]) => [key, typeof value])
-        )
-    };
-
-    console.log('Statistics:', stats.types);
-    
-    // mostra os dados no HTML
-    const numberOfRows = document.getElementById("total-rows");
-    const numberOfColumns = document.getElementById('total-columns');
-
-    numberOfRows.textContent = stats.rows;
-    numberOfColumns.textContent = stats.columns;
 
     // create data table
     const cols = meta.fields.slice(0,10); // pega as 10 primeiras colunas
@@ -91,7 +92,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });  
 
 function showDataTable(data, cols, table){
-
     table.innerHTML = ''; // limpa o conteúdo da tabela
 
     // monta o cabeçalho
@@ -132,7 +132,6 @@ function showDataTable(data, cols, table){
 }
 
 function showInfoTable(data, cols, table){
-
     table.innerHTML = ''; // limpa o conteúdo da tabela
 
     // monta o cabeçalho
@@ -155,4 +154,31 @@ function showInfoTable(data, cols, table){
         td.textContent = row[col] ?? '';
         });
     });
+}
+
+function showStatistics(columns, fileSize, metadata, rows) {
+    const percentMissing = document.getElementById('missing-values');
+    const numberOfRows = document.getElementById("total-rows");
+    const numberOfColumns = document.getElementById('total-columns');
+    const datasetSize = document.getElementById('file-size');
+
+    const totalRows = rows.length;
+    const totalColumns = columns.length;    
+
+    const percentagesMissing = columns.map(col => {
+        const missing = metadata[col].missingValues;
+        const total = rows.length;
+        return ((missing / total) * 100).toFixed(2);
+    });
+    
+    const totalPercentMissing = percentagesMissing.reduce((acc, val) => acc + parseFloat(val), 0);
+
+    console.log('Percentuais de values ausentes:', percentagesMissing);
+    console.log('Total de values ausentes:', totalPercentMissing);
+
+    percentMissing.textContent = totalPercentMissing;
+    numberOfRows.textContent = totalRows;
+    numberOfColumns.textContent = totalColumns;
+    numberOfColumns.textContent = totalColumns;
+    datasetSize.textContent = (fileSize / (1024 * 1024)).toFixed(2) + ' MB'; // converte para MB
 }

@@ -203,8 +203,9 @@ ipcMain.handle('select-file', async () => {
       return null;
     }
     
+    const fileStats = fs.statSync(filePaths[0]);
     const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
-    return { path: filePaths[0], content: fileContent };
+    return { path: filePaths[0], content: fileContent, size: fileStats.size };
   });
 
 ipcMain.handle('show-dialog', async (event, dialogOptions) => {
