@@ -34,6 +34,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      const selectColumns = document.getElementById("select-columns");
+      selectColumns.innerHTML = ""; // Limpa opções anteriores
+      
+      columns.forEach(col => {
+        const option = document.createElement("option");
+        option.value = col;
+        option.textContent = col;
+        selectColumns.appendChild(option);
+      });
+
       const histogramData = data.map(row => row[columns[0]]);
       const correlacaoData = {
         x: data.map(row => row[columns[0]]),

@@ -36,6 +36,14 @@
   <main>
     <div class="section">
       <h2>Visualize Your Data</h2>
+      <label for="select-columns">Select Columns</label>
+      <select id="select-columns" name="select-columns">
+        <option value="force-directed">Force-Directed Layout</option>
+        <option value="circular">Circular Layout</option>
+        <option value="hierarchical">Hierarchical Layout</option>
+        <option value="random">Random Layout</option>
+      </select>
+      <div class="selected-columns" id="selected-columns"></div>
         <div id="histograma" class="chart"></div>
         <div id="correlacao" class="chart"></div>
         <div id="barras" class="chart"></div>
