@@ -44,33 +44,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         selectColumns.appendChild(option);
       });
 
-      const histogramData = data.map(row => row[columns[0]]);
-      const correlacaoData = {
-        x: data.map(row => row[columns[0]]),
-        y: data.map(row => row[columns[1]])
-      };
-      const barChartData = {
-        categories: data.slice(0, 4).map(row => row[columns[0]]),
-        series: data.slice(0, 4).map(row => row[columns[1]])
-      };
-      const boxplotData = [
-        { x: columns[0], y: data.map(row => row[columns[0]]) },
-        { x: columns[1], y: data.map(row => row[columns[1]]) }
-      ];
-
-      console.log("Dados preparados para gráficos:", {
-        histogramData,
-        correlacaoData,
-        barChartData,
-        boxplotData
-      });
-
-      renderCharts(histogramData, correlacaoData, barChartData, boxplotData);
+      handleDataSelection(columns, data);
     },
     error: (err) => {
       console.error('Erro ao fazer parsing do CSV:', err);
     }
   });
+
+  function handleDataSelection(columns, data) {
+    const histogramData = data.map(row => row[columns[0]]);
+    const correlacaoData = {
+      x: data.map(row => row[columns[0]]),
+      y: data.map(row => row[columns[1]])
+    };
+    const barChartData = {
+      categories: data.slice(0, 4).map(row => row[columns[0]]),
+      series: data.slice(0, 4).map(row => row[columns[1]])
+    };
+    const boxplotData = [
+      { x: columns[0], y: data.map(row => row[columns[0]]) },
+      { x: columns[1], y: data.map(row => row[columns[1]]) }
+    ];
+
+    console.log("Dados preparados para gráficos:", {
+      histogramData,
+      correlacaoData,
+      barChartData,
+      boxplotData
+    });
+
+    renderCharts(histogramData, correlacaoData, barChartData, boxplotData);
+  }
 
   function renderCharts(histogramData, correlacaoData, barChartData, boxplotData) {
     new ApexCharts(histogram, {
@@ -104,3 +108,48 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).render();
   }
 });
+/* 
+
+let selectedItems = []; // Array para gerenciar os itens selecionados
+
+function updateSelectedColumns() {
+
+  // Verifica opções selecionadas e atualiza o array
+  Array.from(excludeSelect.options).forEach(option => {
+    if (option.selected && !selectedItems.includes(option.value)) {
+      selectedItems.push(option.value);
+      option.disabled = true;
+    }
+  });
+
+  renderTags();
+}
+
+function renderTags() {
+  selectedContainer.innerHTML = '';
+  
+  selectedItems.forEach(value => {
+    const tag = document.createElement('div');
+    tag.className = 'column-tag';
+    tag.dataset.column = value;
+    tag.innerHTML = `${value} <button type="button">×</button>`;
+
+    tag.querySelector('button').addEventListener('click', () => {
+      selectedItems = selectedItems.filter(item => item !== value);
+      const option = Array.from(excludeSelect.options).find(opt => opt.value === value);
+      option.disabled = false;
+      option.selected = false;
+      renderTags();
+    });
+
+    selectedContainer.appendChild(tag);
+  });
+}
+
+// Evento para confirmar e mostrar todos os selecionados corretamente
+generateBtn.addEventListener('click', () => {
+  alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
+});
+
+excludeSelect.addEventListener('change', updateSelectedColumns);
+window.addEventListener('DOMContentLoaded', renderTags); */
