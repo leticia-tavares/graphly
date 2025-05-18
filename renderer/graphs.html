@@ -7,6 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Graphly - Generate Graph</title>
+  <script src="../node_modules/papaparse/papaparse.min.js"></script>
   <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  -->
   <link rel="stylesheet" href="style.css">
 </head>
@@ -48,11 +49,6 @@
 
               <label for="exclude-columns">Choose columns to exclude</label>
               <select id="exclude-columns" multiple="10" name="exclude-columns">
-                <option value="Order ID">Order ID</option>
-                <option value="Customer">Customer</option>
-                <option value="Product">Product</option>
-                <option value="Quantity">Quantity</option>
-                <option value="Total">Total</option>
               </select>
               <div class="selected-columns" id="selected-columns"></div>
             <button id="generate-graph" type="submit" class="btn-primary">Generate Graph</button>
@@ -62,7 +58,7 @@
       <section class="section">
         <div class="graph-display">
           <h2>Generated Graph</h2>
-          <img src="../data/result.png" alt="Your generated graph">
+          <!--  <img src="../data/result.png" alt="Your generated graph"> -->
         </div>
       </section>
     </div>
