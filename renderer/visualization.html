@@ -45,48 +45,46 @@
 
   <main>
     <div class="section">
-      <h2>Visualize Seus Dados</h2>
-      <label for="select-columns">Selecione as Colunas para Análise:</label>
+      <h2>Visualize Your Dataset</h2>
+      <label for="select-columns">Select which columns to analyze:</label>
       <select id="select-columns" name="select-columns"> 
         </select>
       <div class="selected-columns" id="selected-columns-tags">
         </div>
-      <button id="confirm-initial-selection-btn" class="btn-primary">Configurar Gráficos</button>
+      <button id="confirm-initial-selection-btn" class="btn-primary">start</button>
 
       <div id="chart-config-area" style="display:none;">
-        <h3>Mapear Colunas para Gráficos</h3>
+        <h3>Configure</h3>
 
         <div class="config-group">
-            <h4>Histograma</h4>
-            <label for="hist-column-select">Coluna para Histograma:</label>
+            <h4>Histogram</h4>
+            <label for="hist-column-select">Column:</label>
             <select id="hist-column-select"></select>
         </div>
 
         <div class="config-group">
-            <h4>Gráfico de Correlação</h4>
-            <label for="corr-x-select">Coluna Eixo X:</label>
+            <h4>correlation</h4>
+            <label for="corr-x-select">X-Axis Column:</label>
             <select id="corr-x-select"></select><br>
-            <label for="corr-y-select">Coluna Eixo Y:</label>
+            <label for="corr-y-select">Y-Axis Column:</label>
             <select id="corr-y-select"></select><br>
-            <label for="corr-tooltip-select">Coluna para Tooltip:</label>
-            <select id="corr-tooltip-select"></select>
         </div>
 
         <div class="config-group">
-            <h4>Gráfico de Barras</h4>
-            <label for="bar-cat-select">Coluna de Categorias:</label>
+            <h4>Bar chart</h4>
+            <label for="bar-cat-select">Categories:</label>
             <select id="bar-cat-select"></select><br>
-            <label for="bar-val-select">Coluna de Valores:</label>
+            <label for="bar-val-select">values:</label>
             <select id="bar-val-select"></select>
         </div>
 
         <div class="config-group">
             <h4>Boxplot</h4>
-            <label for="boxplot-column-select">Colunas para Boxplot:</label>
+            <label for="boxplot-column-select">Columns: </label>
             <select id="boxplot-column-select" multiple></select>
         </div>
 
-        <button id="generate-all-charts-btn" class="btn-primary">Gerar Gráficos</button>
+        <button id="generate-all-charts-btn" class="btn-primary">Plot Data</button>
       </div>
 
       <div class="charts-output-area">
