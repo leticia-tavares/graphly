@@ -286,6 +286,13 @@ tr:hover {
   flex-wrap: wrap;
 }
 
+.graph-container .btn-primary{
+  display: block;
+  width: 200px; /* Defina a largura que desejar */
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .graph-container > section {
   flex: 1;
   min-width: 300px;
@@ -320,6 +327,13 @@ select {
   flex-wrap: wrap;
   gap: 0.6rem;
   margin-top: 1rem;
+}
+
+.section .btn-primary{
+  display: block;
+  width: 200px; /* Defina a largura que desejar */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .column-tag {

@@ -36,15 +36,15 @@
   <main>
     <div class="section">
       <h2>Visualize Your Data</h2>
-      <label for="select-columns">Select Columns</label>
-      <select id="select-columns" name="select-columns" multiple="3">
-        <option value="force-directed">Force-Directed Layout</option>
+      <label for="select-columns">Select Columns To Plot</label>
+      <select id="select-columns" name="select-columns" multiple>
+        <!-- <option value="force-directed">Force-Directed Layout</option>
         <option value="circular">Circular Layout</option>
         <option value="hierarchical">Hierarchical Layout</option>
-        <option value="random">Random Layout</option>
+        <option value="random">Random Layout</option> -->
       </select>
-      <div class="selected-columns" id="selected-columns"></div>
-      <button id="confirm-selection">Confirmar Seleção</button>
+      <div class="selected-columns" id="selected-columns-tags"></div>
+      <button id="confirm-selection" class="btn-primary">Plot Data</button>
         <div id="histograma" class="chart"></div>
         <div id="correlacao" class="chart"></div>
         <div id="barras" class="chart"></div>

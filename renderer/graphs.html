@@ -39,14 +39,6 @@
         <h2>Generate Graph from Dataset</h2>
 
           <form id="graph-form">
-              <label for="algorithm">Select Graph Algorithm</label>
-              <select id="algorithm" name="algorithm">
-                <option value="force-directed">Force-Directed Layout</option>
-                <option value="circular">Circular Layout</option>
-                <option value="hierarchical">Hierarchical Layout</option>
-                <option value="random">Random Layout</option>
-              </select>
-
               <label for="exclude-columns">Choose columns to exclude</label>
               <select id="exclude-columns" multiple="10" name="exclude-columns">
               </select>
@@ -58,6 +50,32 @@
       <section class="section">
         <div class="graph-display">
           <h2>Generated Graph</h2>
+          <!--  <img src="../data/result.png" alt="Your generated graph"> -->
+        </div>
+      </section>
+    </div>
+
+      <div class="graph-container">
+      <section class="section">
+        <h2>Community Detection</h2>
+
+          <form id="graph-form">
+              <label for="algorithm">Select Algorithm</label>
+              <select id="algorithm" name="algorithm">
+                <option value="force-directed">Force-Directed Layout</option>
+                <option value="circular">Circular Layout</option>
+                <option value="hierarchical">Hierarchical Layout</option>
+                <option value="random">Random Layout</option>
+              </select>
+
+            <br><br>
+            <button id="detect-community" type="submit" class="btn-primary">Run</button>
+          </form>
+      </section>
+
+      <section class="section">
+        <div class="detection-display">
+          <h2>Community Detection Result</h2>
           <!--  <img src="../data/result.png" alt="Your generated graph"> -->
         </div>
       </section>

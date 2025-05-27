@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // parse CSV com cabeçalho
     const { data, meta } = Papa.parse(dataset.content, {
         header: true,
+        dynamicTyping: true,
         skipEmptyLines: true,
         complete: results => {
             //const columns = Object.keys(rows[0] || {}); 
