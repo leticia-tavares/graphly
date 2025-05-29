@@ -1,10 +1,12 @@
 /*
- This file is responsible for intermediaanting the communication between the main process and the renderer process
+ This file is responsible for intermedianting the communication 
+ between the main process and the renderer process.
  It is used to expose the ipcRenderer object to the renderer process
 */
 
 const { contextBridge, ipcRenderer } = require('electron');
 
+// Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
   selectFile: () => ipcRenderer.invoke('select-file'),
   navigate: (page) => ipcRenderer.send('navigate', page),

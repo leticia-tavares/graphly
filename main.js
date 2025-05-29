@@ -1,14 +1,16 @@
 /* Code for the applications's main process (backend)
    This file is responsible for creating the application's window and handling the application's events
 */
+
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-let mainWindow;
-let savedDataset = null;
+// ----- Global Variables -----
+let mainWindow;           // stores the app main window
+let savedDataset = null;  // stores the dataset loaded by the user
 
-// creating directory to store any data
+// Creating a directory to store any new data
 fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   if(err) {
     return console.error(err);
@@ -17,11 +19,12 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   console.log("Directory successfuly created!");
 });
 
-// async function loadCSV(filePath) {
-//   const df = await dfd.readCSV(filePath);
-//   return df;
-// }
-
+/** 
+@brief Creates the main application window
+@details This function is called when the application is ready to create the main window.
+         It sets the window's size, icon, web preferences, and loads the HTML file.
+         It also creates the application's menu and handles navigation requests from the renderer process.
+*/ 
 function createWindow(){
     // create application mainWindow
         mainWindow = new BrowserWindow({
@@ -38,11 +41,12 @@ function createWindow(){
         }
     });
    
+    // Set the app icon for MacOS Dock
     if(process.platform === 'darwin'){
       app.dock.setIcon(path.join(__dirname, '/assets/logo-circle.png'));
     }
 
-  // create the application's menu template for all OS
+  // Application's menu template for all Operating Systems
   const templateMenu = [
     {
       label: 'View',
@@ -141,7 +145,7 @@ function createWindow(){
     }
   ]; // end of menu template
 
-  // additional menu template logic for macOS
+  // Additional menu template logic for macOS
   if (process.platform === 'darwin'){
     const name = app.getName();
     templateMenu.unshift({
@@ -157,14 +161,14 @@ function createWindow(){
   
   }
 
-    // load the html file
+    // Load index.html file into the main window
     mainWindow.loadFile(path.join(__dirname, 'renderer/index.html'));
 
-    // build the menu
+    // Build the menu
     const menu = Menu.buildFromTemplate(templateMenu);
     Menu.setApplicationMenu(menu);
 
-    // Abre as ferramentas de desenvolvimento (opcional)
+    // Enable the DevTools for debugging 
     // mainWindow.webContents.openDevTools();
 
     mainWindow.on('closed', () => {
@@ -172,17 +176,17 @@ function createWindow(){
     });
 };
 
-// Handle navigation request from Renderer
+// Handle navigation request from the Renderer process
 ipcMain.on('navigate', (event, page) => {
 /*   let pathToPage = path.join(__dirname, `renderer/${page}`);
   mainWindow.loadFile(pathToPage); */
 
-  console.log(`Navegando para: ${page}`);
+  console.log(`Navigating to: ${page}`);
   const pathToPage = path.join(__dirname, 'renderer', page);
-  mainWindow.loadFile(pathToPage).catch(err => console.error(`Erro ao carregar ${page}:`, err));
+  mainWindow.loadFile(pathToPage).catch(err => console.error(`Error when loading ${page}:`, err));
 });
 
-// Recebe o tema do frontend e aplica no Electron
+// Handle theme change request from Renderer
 ipcMain.on('set-theme', (event, theme) => {
   if (theme === 'system') {
     nativeTheme.themeSource = 'system';
@@ -213,12 +217,12 @@ ipcMain.handle('show-dialog', async (event, dialogOptions) => {
   return result;
 });
   
-
+// Save dataset to a global variable
 ipcMain.on('save-dataset', (event, data) => {
-  // recebe e armazena o conteudo do dataset
   savedDataset = data;
 });
 
+// Load the dataset from the global variable
 ipcMain.handle('load-dataset', () => {
   if (savedDataset){
     return savedDataset;
@@ -226,6 +230,8 @@ ipcMain.handle('load-dataset', () => {
   return null;
 })
 
+
+// Application ready event
 app.whenReady().then(() => {
     createWindow();
 
@@ -237,7 +243,7 @@ app.whenReady().then(() => {
     });
 });
 
-// closes the application whenn all windows are closed as well (except macos)
+// Closes the application when all windows are closed as well 
 app.on('windows-all-closed', () => {
     if(process.platform !== 'darwin'){
         app.quit();

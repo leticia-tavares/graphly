@@ -1,7 +1,7 @@
  // overview.js
 document.addEventListener('DOMContentLoaded', async () => {
 
-    // carrega o dataset salvo no main process
+    // Load the dataset from the main process
     const dataset = await window.electronAPI.loadDataset();
     if (!dataset) {
         const response = await window.electronAPI.showDialog({
@@ -11,26 +11,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             message: 'Please upload your dataset first.'
           });
         // console.log('Resposta do diálogo:', response);
-        window.electronAPI.navigate('index.html'); // Redireciona para upload
-
+        window.electronAPI.navigate('index.html'); // Redirect to index.html
         return;
     }
 
-    // parse CSV com cabeçalho
+    // CSV Parsing 
     const { data, meta } = Papa.parse(dataset.content, {
         header: true,
-        dynamicTyping: true,
+        dynamicTyping: true, // convert numbers and booleans
         skipEmptyLines: true,
-        complete: results => {
-            //const columns = Object.keys(rows[0] || {}); 
-            
-            const rows    = results.data;            // array de objetos
-            const columns = results.meta.fields;     // nomes exatos do header
+        complete: results => {            
+            const rows    = results.data;            // objects 
+            const columns = results.meta.fields;     // column names
+
             if (!columns || columns.length === 0) {
               return alert('Não foi possível identificar colunas no CSV.');
             }
   
-            // --- 2) Monta objeto de metadata ---
+            // --- Creating metada object ---
             const metadata = {};
             columns.forEach(col => {
               const values    = rows.map(r => r[col]);
@@ -55,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return max.toFixed(2);
               }
   
+              // Add all information to the metadata object
               metadata[col] = {
                 type,
                 uniqueValues: uniqueCount,
@@ -65,11 +64,11 @@ document.addEventListener('DOMContentLoaded', async () => {
               };
             });
 
-            console.log('file size:', dataset.size);
+            //console.log('file size:', dataset.size);
     
             showStatistics(columns, dataset.size, metadata, rows);
 
-            // --- 3) Converte em array para montar a tabela ---
+            // --- 3) Convert the object to an array ---
             const metaArray = columns.map(col => ({
               Column: col,
               Type: metadata[col].type,
@@ -79,26 +78,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const infoTable = document.getElementById('info-table');
 
-           // --- 4) Exibe na tabela ---
+           // --- 4) Print all info into a table ---
             showInfoTable(metaArray, ['Column','Type','Unique Values','Missing Values'], infoTable);
        }
     });
 
-    // create data table
-    const cols = meta.fields.slice(0,10); // pega as 10 primeiras colunas
+    // Create the data table
+    const cols = meta.fields.slice(0,10); // get the first 10 columns
     const table = document.getElementById('data-table');
 
     showDataTable(data, cols, table);
  
 });  
 
+/** 
+@brief This function displays the data in a table format.
+@param {Array} data - The data to be displayed in the table.
+@param {Array} cols - The columns to be displayed in the table.
+@param {HTMLTableElement} table - The table element where the data will be displayed.
+@description This function clears the existing content of the table, 
+creates a header with the specified columns, and populates the body with the data. 
+It limits the number of rows displayed to 10 for performance reasons.
+*/
 function showDataTable(data, cols, table){
-    table.innerHTML = ''; // limpa o conteúdo da tabela
+    table.innerHTML = ''; // clean the table content
 
-    // monta o cabeçalho
+    // create the header
     const thead = table.createTHead();
     const hrow = thead.insertRow();
 
+    // insert the columns into the header
     cols.forEach(col => {
         const th = document.createElement('th');
         th.textContent = col;
@@ -109,9 +118,10 @@ function showDataTable(data, cols, table){
     th.textContent = '...';
     hrow.appendChild(th);
 
-    // monta o corpo
+    // create the body
     const tbody = table.createTBody();
 
+    // insert the first 10 rows of data
     data.slice(0,10).forEach(row => {
         const tr = tbody.insertRow();
         cols.forEach(col => {
@@ -132,22 +142,34 @@ function showDataTable(data, cols, table){
     td.textContent = '...';
 }
 
+/**
+ * @brief This function displays the metadata information in a table format.
+ * @param {Array} data 
+ * @param {Array} cols 
+ * @param {HTMLTableElement} table 
+ * @description This functions clears the existing content of the info table,
+ * creates a header with the specified columns, and populates the body with the metadata information.
+ * It displays the column name, type, unique values, and missing values for each column.
+ * It is used to provide an overview of the dataset's structure and quality.
+ */
 function showInfoTable(data, cols, table){
-    table.innerHTML = ''; // limpa o conteúdo da tabela
+    table.innerHTML = ''; // clean the table content
 
-    // monta o cabeçalho
+    // create the header
     const thead = table.createTHead();
     const hrow = thead.insertRow();
 
+    // insert the columns into the header
     cols.forEach(col => {
         const th = document.createElement('th');
         th.textContent = col;
         hrow.appendChild(th);
     });
 
-    // monta o corpo
+    // create the body
     const tbody = table.createTBody();
 
+    // insert the data into the body
     data.forEach(row => {
         const tr = tbody.insertRow();
         cols.forEach(col => {
@@ -157,15 +179,29 @@ function showInfoTable(data, cols, table){
     });
 }
 
+
+/**
+ * @brief This function calculates and displays the statistics of the dataset.
+ * @param {Array} columns - The columns of the dataset.
+ * @param {number} fileSize - The size of the dataset file in bytes.
+ * @param {Object} metadata - The metadata object containing information about each column.
+ * @param {Array} rows - The rows of the dataset.
+ * @description This function calculates the percentage of missing values for each column,
+ * the total number of rows and columns, and the size of the dataset in MB. 
+ * It then updates the corresponding HTML elements with this information.
+ */
 function showStatistics(columns, fileSize, metadata, rows) {
+    // Get the HTML elements to display the statistics
     const percentMissing = document.getElementById('missing-values');
     const numberOfRows = document.getElementById("total-rows");
     const numberOfColumns = document.getElementById('total-columns');
     const datasetSize = document.getElementById('file-size');
 
+    // Calculate the total number of rows and columns
     const totalRows = rows.length;
     const totalColumns = columns.length;    
 
+    // Calculate the percentage of missing values for each column
     const percentagesMissing = columns.map(col => {
         const missing = metadata[col].missingValues;
         const total = rows.length;
@@ -177,9 +213,10 @@ function showStatistics(columns, fileSize, metadata, rows) {
     console.log('Percentuais de values ausentes:', percentagesMissing);
     console.log('Total de values ausentes:', totalPercentMissing);
 
+    // Update the HTML elements with the calculated statistics
     percentMissing.textContent = totalPercentMissing;
     numberOfRows.textContent = totalRows;
     numberOfColumns.textContent = totalColumns;
     numberOfColumns.textContent = totalColumns;
-    datasetSize.textContent = (fileSize / (1024 * 1024)).toFixed(2) + ' MB'; // converte para MB
+    datasetSize.textContent = (fileSize / (1024 * 1024)).toFixed(2) + ' MB'; // convert the file size to MB
 }

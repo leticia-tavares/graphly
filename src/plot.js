@@ -1,15 +1,14 @@
-
-// Garante que o script só execute depois que todo o DOM estiver carregado
+// make sure the script runs after the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', async () => {
-    // --- Seletores de elementos DOM (ajustados para corresponder ao seu HTML) ---
+    // Get all the necessary HTML elements
     const histogramContainer = document.querySelector("#histograma");
     const correlationContainer = document.querySelector("#correlacao");
     const barsContainer = document.querySelector("#barras");
     const boxplotContainer = document.querySelector("#boxplot");
 
-    const columnSelectorDropdown = document.getElementById("select-columns"); // ID do seu HTML
-    const selectedTagsContainer = document.getElementById('selected-columns-tags'); // ID do seu HTML
-    const confirmInitialSelectionBtn = document.getElementById('confirm-initial-selection-btn'); // ID do seu HTML
+    const columnSelectorDropdown = document.getElementById("select-columns"); 
+    const selectedTagsContainer = document.getElementById('selected-columns-tags'); 
+    const confirmInitialSelectionBtn = document.getElementById('confirm-initial-selection-btn'); 
 
     const chartConfigArea = document.getElementById('chart-config-area');
     const histColumnSelect = document.getElementById('hist-column-select');
@@ -21,27 +20,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const boxplotColumnSelect = document.getElementById('boxplot-column-select');
     const generateAllChartsBtn = document.getElementById('generate-all-charts-btn');
 
-    let fullData = []; // Armazena os dados completos do CSV após o parsing
-    let allColumnNames = []; // Armazena todos os nomes das colunas do CSV
-    let selectedColumnItems = []; // Armazena as colunas selecionadas inicialmente pelo usuário
+    let fullData = []; // Stores all the parsed data from the CSV
+    let allColumnNames = []; // Stores column names from the CSV header
+    let selectedColumnItems = []; // Stores all selected columns by the user
 
-    // Instâncias dos gráficos ApexCharts para permitir a destruição e recriação
+    // ApexCharts instances for each chart type
     let histogramChartInstance, correlationChartInstance, barsChartInstance, boxplotChartInstance;
 
-    // --- CARREGAMENTO INICIAL DO DATASET ---
+    // Load the dataset from the main process
     try {
-        console.log("Tentando carregar dataset...");
         const dataset = await window.electronAPI.loadDataset();
         if (!dataset || !dataset.content) {
-            console.warn("Dataset não carregado ou vazio. Exibindo aviso.");
             await window.electronAPI.showDialog({
-                type: 'info', buttons: ['OK'], title: 'Aviso',
-                message: 'Por favor, carregue seu dataset primeiro.'
+                type: 'info', buttons: ['OK'], title: 'Warning',
+                message: 'Please, upload a dataset first.',
             });
             window.electronAPI.navigate('index.html');
             return; 
         }
-        console.log("Dataset carregado com sucesso. Conteúdo:", dataset.content.substring(0, 100) + "..."); // Log parcial do conteúdo
 
         Papa.parse(dataset.content, {
             header: true, 
@@ -50,10 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             complete: (results) => {
                 fullData = results.data; 
                 allColumnNames = results.meta.fields; 
-                console.log("CSV parseado. Colunas:", allColumnNames);
-                console.log("Primeiras 5 linhas dos dados:", fullData.slice(0, 5));
 
-                // Popula o dropdown inicial de seleção de colunas
+                // Populates the dropdown with column names
                 columnSelectorDropdown.innerHTML = ""; 
                 allColumnNames.forEach(col => {
                     const option = document.createElement("option");
@@ -61,20 +55,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                     option.textContent = col;
                     columnSelectorDropdown.appendChild(option);
                 });
-                console.log("Dropdown inicial populado.");
             },
             error: (err) => {
-                console.error('Erro ao fazer parsing do CSV:', err);
-                alert('Erro ao processar o arquivo CSV. Verifique o console.');
+                console.error('Error parsing the CSV:', err);
+                alert('Error processing the CSV file. Please check the file format.');
             }
         });
     } catch (error) {
-        console.error("Erro ao carregar dataset via Electron API:", error);
-        alert("Não foi possível carregar o dataset.");
+        console.error("Error loading dataset via Electron API:", error);
+        alert("Unable to load the dataset.");
         return; 
     }
 
-    // --- LÓGICA DE SELEÇÃO INICIAL DE COLUNAS (Dropdown e Tags) ---
+    // Initial selection of columns
     columnSelectorDropdown.addEventListener('change', (event) => {
         const selectedValue = event.target.value;
         const selectedOption = event.target.options[event.target.selectedIndex];
@@ -87,10 +80,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         renderTags(); 
-        console.log("Colunas selecionadas:", selectedColumnItems);
     });
 
-    // Função para renderizar as tags das colunas selecionadas
+    // Render selected tags in the container
     function renderTags() {
         selectedTagsContainer.innerHTML = ''; 
         selectedColumnItems.forEach(value => {
@@ -101,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Adiciona um listener de evento para o contêiner das tags
+    // Tag event listener to remove selected columns from the list
     selectedTagsContainer.addEventListener('click', (event) => {
         if (event.target.tagName === 'BUTTON' && event.target.closest('.column-tag')) {
             const valueToRemove = event.target.dataset.value; 
@@ -114,23 +106,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 optionToEnable.selected = false; 
             }
             renderTags(); 
-            console.log("Colunas selecionadas após remoção:", selectedColumnItems);
         }
     });
     
-    // --- BOTÃO "CONFIGURAR GRÁFICOS" ---
+    // Add event listener to the confirmation button
     confirmInitialSelectionBtn.addEventListener('click', () => {
         if (selectedColumnItems.length === 0) {
-            alert("Selecione pelo menos uma coluna para configurar os gráficos.");
+            alert("Select at least one column.");
             return;
         }
-        console.log("Confirmar seleção inicial clicado. Populando selects de configuração.");
 
-        // Popula os selects na área de configuração de gráficos com as colunas selecionadas
+        // Populate the configuration selects with the selected columns
         populateConfigSelect(histColumnSelect, selectedColumnItems);
         populateConfigSelect(corrXSelect, selectedColumnItems);
         populateConfigSelect(corrYSelect, selectedColumnItems);
-        // Removido: populateConfigSelect(corrTooltipSelect, selectedColumnItems); // Não é mais necessário
         populateConfigSelect(barCatSelect, selectedColumnItems);
         populateConfigSelect(barValSelect, selectedColumnItems);
         populateConfigSelect(boxplotColumnSelect, selectedColumnItems, true); 
@@ -138,13 +127,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         chartConfigArea.style.display = 'block'; 
     });
 
-    // Função auxiliar para popular um elemento <select>
+    /**
+     * @brief Populates a select element with given items.
+     * @param {HTMLSelectElement} selectElement - The select element to populate.
+     * @param {Array} items - The items to populate the select with.
+     * @param {boolean} isMultiple - Whether the select allows multiple selections.
+     */
     function populateConfigSelect(selectElement, items, isMultiple = false) {
         selectElement.innerHTML = ""; 
         if (!isMultiple) { 
             const emptyOpt = document.createElement('option');
             emptyOpt.value = "";
-            emptyOpt.textContent = "Selecione...";
+            emptyOpt.textContent = "Select...";
             selectElement.appendChild(emptyOpt);
         }
         items.forEach(item => {
@@ -153,12 +147,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             option.textContent = item;
             selectElement.appendChild(option);
         });
-        console.log(`Select '${selectElement.id}' populado com ${items.length} itens.`);
+        console.log(`Select '${selectElement.id}' populated with ${items.length} items.`);
     }
 
-    // --- BOTÃO "GERAR GRÁFICOS" ---
+    // Event listener to handle the "Generate Plots" button click
     generateAllChartsBtn.addEventListener('click', () => {
-        console.log("Gerar Gráficos clicado.");
         const chartConfig = {
             histogramCol: histColumnSelect.value,
             correlationXCol: corrXSelect.value,
@@ -167,15 +160,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             barValueCol: barValSelect.value,
             boxplotCols: Array.from(boxplotColumnSelect.selectedOptions).map(opt => opt.value)
         };
-        console.log("Configuração dos gráficos:", chartConfig);
 
-        // Validações básicas antes de gerar os gráficos
+        // Basic validations before generating the charts
         if (chartConfig.correlationXCol && chartConfig.correlationYCol && chartConfig.correlationXCol === chartConfig.correlationYCol) {
-            alert("Para o gráfico de correlação, as colunas para Eixo X e Eixo Y devem ser diferentes.");
+            alert("For the correlation chart, the columns for X-axis and Y-axis must be different.");
             return;
         }
         if (chartConfig.barCategoryCol && chartConfig.barValueCol && chartConfig.barCategoryCol === chartConfig.barValueCol) {
-            alert("Para o gráfico de barras, as colunas de Categoria e Valor devem ser diferentes.");
+            alert("For the bar chart, the Category and Value columns must be different.");
             return;
         }
 
@@ -183,9 +175,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         handleAndRenderCharts(chartConfig, fullData);
     });
 
-    // Função para destruir todas as instâncias de gráficos existentes
+    /**
+     * @brief Destroy all chart instances and clear their containers.
+     */
     function destroyCharts() {
-        console.log("Destruindo gráficos anteriores...");
         if (histogramChartInstance) histogramChartInstance.destroy();
         if (correlationChartInstance) correlationChartInstance.destroy();
         if (barsChartInstance) barsChartInstance.destroy();
@@ -197,51 +190,68 @@ document.addEventListener('DOMContentLoaded', async () => {
         boxplotContainer.innerHTML = "";
     }
 
-    // Função principal para preparar dados e renderizar os gráficos
+    /**
+     * This function handles the rendering of all charts based on the provided configuration and data.
+     * @param {Object} config - The configuration object containing selected columns for each chart type.
+     * @param {Array} data - The dataset to be used for rendering the charts.
+     * @description It processes the data for each chart type, creates the necessary ApexCharts instances,
+     */
     function handleAndRenderCharts(config, data) {
-        console.log("Preparando e renderizando gráficos...");
-        // --- 1. HISTOGRAMA (usando gráfico de barras para frequências) ---
+
+       // --- 1. HISTOGRAM (optimized generation) ---
         if (config.histogramCol) {
-            const histDataRaw = data.map(row => row[config.histogramCol]).filter(val => val !== null && val !== undefined);
-            const freqCounts = histDataRaw.reduce((acc, val) => {
-                acc[val] = (acc[val] || 0) + 1;
-                return acc;
-            }, {});
-            
-            if (Object.keys(freqCounts).length > 0) {
+            const histDataRaw = data
+                .map(row => row[config.histogramCol])
+                .filter(val => typeof val === 'number' && !isNaN(val));
+
+            if (histDataRaw.length > 0) {
+                const bins = Math.round(Math.sqrt(histDataRaw.length));
+                const minVal = Math.min(...histDataRaw);
+                const maxVal = Math.max(...histDataRaw);
+                const binSize = (maxVal - minVal) / bins;
+
+                const histogramData = Array(bins).fill(0);
+                const categories = Array(bins).fill(0).map((_, i) => (minVal + i * binSize).toFixed(2));
+
+                histDataRaw.forEach(val => {
+                    const binIndex = Math.min(
+                        bins - 1,
+                        Math.floor((val - minVal) / binSize)
+                    );
+                    histogramData[binIndex]++;
+                });
+
                 histogramChartInstance = new ApexCharts(histogramContainer, {
                     chart: { type: 'bar', height: 350, toolbar: { show: true } },
-                    title: { text: `Histograma de Frequência: ${config.histogramCol}`, align: 'left' },
-                    series: [{ name: 'Frequência', data: Object.values(freqCounts) }],
-                    xaxis: { 
-                        categories: Object.keys(freqCounts),
+                    title: { text: `Histogram: ${config.histogramCol}`, align: 'left' },
+                    series: [{ name: 'Frequency', data: histogramData }],
+                    xaxis: {
+                        categories,
                         title: { text: config.histogramCol },
-                        labels: { rotate: -45, rotateAlways: true } 
+                        labels: { rotate: -45, rotateAlways: true }
                     },
                     yaxis: {
-                        title: { text: 'Contagem' }
+                        title: { text: 'Count' }
                     }
                 });
                 histogramChartInstance.render();
-                console.log("Histograma renderizado para:", config.histogramCol);
             } else {
-                histogramContainer.innerHTML = "<p>Nenhum dado válido encontrado para o histograma com a coluna selecionada.</p>";
-                console.warn("Nenhum dado para histograma.");
+                histogramContainer.innerHTML = "<p>No valid numeric data found for the histogram.</p>";
             }
         } else {
-            histogramContainer.innerHTML = "<p>Selecione uma coluna para o histograma.</p>";
+            histogramContainer.innerHTML = "<p>Select a column for the histogram.</p>";
         }
 
-        // --- 2. GRÁFICO DE CORRELAÇÃO (Scatter Plot) ---
+        // --- 2. CORRELATION CHART (Scatter Plot) ---
         if (config.correlationXCol && config.correlationYCol) {
             const xData = data.map(row => row[config.correlationXCol]);
             const yData = data.map(row => row[config.correlationYCol]);
             
-            // Alterado: Agora armazena o índice original da linha (ID da Linha)
+            // Modified: Now stores the original row index (Row ID)
             const correlationSeriesData = xData.map((x, i) => ({ 
                                             x: x, 
                                             y: yData[i], 
-                                            originalIndex: i + 1 // +1 para ser baseado em 1, como um número de linha
+                                            originalIndex: i + 1 // +1 to be 1-based, like a row number
                                         })) 
                                          .filter(point => typeof point.x === 'number' && !isNaN(point.x) && 
                                                           typeof point.y === 'number' && !isNaN(point.y));
@@ -249,8 +259,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (correlationSeriesData.length > 0) {
                 correlationChartInstance = new ApexCharts(correlationContainer, {
                     chart: { type: 'scatter', height: 350, zoom: { enabled: true, type: 'xy'}, toolbar: { show: true } },
-                    title: { text: `Correlação: ${config.correlationXCol} vs ${config.correlationYCol}`, align: 'left' },
-                    series: [{ name: 'Pontos', data: correlationSeriesData.map(p => [p.x, p.y]) }], 
+                    title: { text: `Correlation: ${config.correlationXCol} vs ${config.correlationYCol}`, align: 'left' },
+                    series: [{ name: 'Points', data: correlationSeriesData.map(p => [p.x, p.y]) }], 
                     xaxis: { 
                         title: { text: config.correlationXCol }, 
                         tickAmount: 10, 
@@ -266,9 +276,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                             let tooltipHtml = `<div class="apexcharts-tooltip-box">
                                                 <span>${config.correlationXCol}: ${typeof pointData.x === 'number' ? pointData.x.toFixed(2) : pointData.x}</span><br>
                                                 <span>${config.correlationYCol}: ${typeof pointData.y === 'number' ? pointData.y.toFixed(2) : pointData.y}</span>`;
-                            // NOVO: Adiciona o ID da linha (índice original)
+                            // NEW: Adds the Row ID (original index)
                             if (pointData.originalIndex !== undefined && pointData.originalIndex !== null) {
-                                tooltipHtml += `<br><span>ID da Linha: ${pointData.originalIndex}</span>`;
+                                tooltipHtml += `<br><span>Row ID: ${pointData.originalIndex}</span>`;
                             }
                             tooltipHtml += `</div>`;
                             return tooltipHtml;
@@ -276,16 +286,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                 });
                 correlationChartInstance.render();
-                console.log("Gráfico de Correlação renderizado para:", config.correlationXCol, config.correlationYCol);
+                console.log("Correlation Chart rendered for:", config.correlationXCol, config.correlationYCol);
             } else {
-                 correlationContainer.innerHTML = "<p>Dados insuficientes ou não numéricos para o gráfico de correlação com as colunas selecionadas.</p>";
-                 console.warn("Nenhum dado para correlação.");
+                 correlationContainer.innerHTML = "<p>Insufficient or non-numeric data for the correlation chart with the selected columns.</p>";
             }
         } else {
-            correlationContainer.innerHTML = "<p>Selecione colunas X e Y para o gráfico de correlação.</p>";
+            correlationContainer.innerHTML = "<p>Select X and Y columns for the correlation chart.</p>";
         }
 
-        // --- 3. GRÁFICO DE BARRAS ---
+        // --- 3. BAR CHART ---
         if (config.barCategoryCol && config.barValueCol) {
             const aggregatedData = data.reduce((acc, row) => {
                 const category = row[config.barCategoryCol];
@@ -299,7 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (Object.keys(aggregatedData).length > 0) {
                 barsChartInstance = new ApexCharts(barsContainer, {
                     chart: { type: 'bar', height: 350, toolbar: { show: true } },
-                    title: { text: `Gráfico de Barras: Soma de ${config.barValueCol} por ${config.barCategoryCol}`, align: 'left' },
+                    title: { text: `Bar Chart: Sum of ${config.barValueCol} by ${config.barCategoryCol}`, align: 'left' },
                     series: [{ name: config.barValueCol, data: Object.values(aggregatedData) }],
                     xaxis: { 
                         categories: Object.keys(aggregatedData),
@@ -307,57 +316,80 @@ document.addEventListener('DOMContentLoaded', async () => {
                         labels: { rotate: -45, rotateAlways: true }
                     },
                     yaxis: {
-                        title: { text: `Soma de ${config.barValueCol}` }
+                        title: { text: `Sum of ${config.barValueCol}` }
                     }
                 });
                 barsChartInstance.render();
-                console.log("Gráfico de Barras renderizado para:", config.barCategoryCol, config.barValueCol);
             } else {
-                barsContainer.innerHTML = "<p>Dados insuficientes ou não apropriados para o gráfico de barras com as colunas selecionadas (verifique se a coluna de valor é numérica para agregação).</p>";
-                console.warn("Nenhum dado para gráfico de barras.");
+                barsContainer.innerHTML = "<p>Insufficient or inappropriate data for the bar chart with the selected columns (check if the value column is numeric for aggregation).</p>";
             }
         } else {
-            barsContainer.innerHTML = "<p>Selecione colunas de Categoria e Valor para o gráfico de barras.</p>";
+            barsContainer.innerHTML = "<p>Select Category and Value columns for the bar chart.</p>";
         }
-        
+
         // --- 4. BOXPLOT ---
         if (config.boxplotCols && config.boxplotCols.length > 0) {
-            const boxplotSeriesData = config.boxplotCols.map(colName => {
-                return {
-                    x: colName, 
-                    y: data.map(row => row[colName]).filter(val => typeof val === 'number' && !isNaN(val)) 
-                };
-            }).filter(series => series.y.length > 0); 
+            const boxplotSeriesData = config.boxplotCols
+                .map(colName => {
+                    const numericValues = data
+                        .map(row => row[colName])
+                        .filter(val => typeof val === 'number' && !isNaN(val));
+
+                    if (numericValues.length === 0) return null;
+
+                    numericValues.sort((a, b) => a - b);
+
+                    const quartile = (arr, q) => {
+                        const pos = ((arr.length - 1) * q);
+                        const base = Math.floor(pos);
+                        const rest = pos - base;
+                        if ((arr[base + 1] !== undefined)) {
+                            return arr[base] + rest * (arr[base + 1] - arr[base]);
+                        } else {
+                            return arr[base];
+                        }
+                    };
+
+                    const q1 = quartile(numericValues, 0.25);
+                    const median = quartile(numericValues, 0.5);
+                    const q3 = quartile(numericValues, 0.75);
+                    const min = numericValues[0];
+                    const max = numericValues[numericValues.length - 1];
+
+                    return {
+                        x: colName,
+                        y: [min, q1, median, q3, max]
+                    };
+                })
+                .filter(series => series !== null);
 
             if (boxplotSeriesData.length > 0) {
                 boxplotChartInstance = new ApexCharts(boxplotContainer, {
                     chart: { type: 'boxPlot', height: 350, toolbar: { show: true } },
-                    title: { text: 'Boxplot das Colunas Selecionadas', align: 'left' },
-                    series: [{ name: 'Distribuição', data: boxplotSeriesData }],
-                    plotOptions: { 
-                        boxPlot: { 
-                            colors: { 
-                                upper: '#5C4742', 
-                                lower: '#A5978B'  
+                    title: { text: 'Boxplot of Selected Columns', align: 'left' },
+                    series: [{ name: 'Distribution', data: boxplotSeriesData }],
+                    plotOptions: {
+                        boxPlot: {
+                            colors: {
+                                upper: '#5C4742',
+                                lower: '#A5978B'
                             }
                         }
                     },
                     xaxis: {
-                        type: 'category', 
-                        title: { text: 'Colunas' }
+                        type: 'category',
+                        title: { text: 'Columns' }
                     },
                     yaxis: {
-                        title: { text: 'Valores' }
+                        title: { text: 'Values' }
                     }
                 });
                 boxplotChartInstance.render();
-                console.log("Boxplot renderizado para:", config.boxplotCols);
             } else {
-                boxplotContainer.innerHTML = "<p>Nenhuma das colunas selecionadas para o boxplot contém dados numéricos válidos.</p>";
-                console.warn("Nenhum dado para boxplot.");
+                boxplotContainer.innerHTML = "<p>None of the selected columns for the boxplot contain valid numeric data.</p>";
             }
         } else {
-            boxplotContainer.innerHTML = "<p>Selecione uma ou mais colunas para o boxplot.</p>";
+            boxplotContainer.innerHTML = "<p>Select one or more columns for the boxplot.</p>";
         }
     }
-});
+});        

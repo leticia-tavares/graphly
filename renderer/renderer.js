@@ -5,22 +5,26 @@
 const selectButton = document.getElementById('select-file');
 const filePathDisplay = document.getElementById('upload-result');
 
+
+// Check if the elements exist before adding event listeners
 selectButton.addEventListener('click', async () => {
   const fileData = await window.electronAPI.selectFile();
 
   if (fileData) {
     filePathDisplay.textContent = `Path: ${fileData.path}`;
-    // salva no processo principal
+    
+    // save the dataset
     window.electronAPI.saveDataset(fileData);
-    console.log('Dataset salvo com sucesso:', fileData);  // Adicione esta linha
-    // vai para overview
+    console.log('Dataset salvo com sucesso:', fileData); 
+
+    // load the ovewrview page
     window.electronAPI.navigate('overview.html');
   } else {
     filePathDisplay.textContent = 'No file selected.';
   }
 });
 
-// Navigation buttons
+// Navigation buttons 
 document.addEventListener("DOMContentLoaded", () => {
   const uploadBtn = document.getElementById("nav-home");
   const overviewBtn = document.getElementById("nav-overview");
