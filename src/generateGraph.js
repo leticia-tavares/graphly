@@ -93,5 +93,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   excludeSelect.addEventListener('change', updateSelectedColumns);
   document.addEventListener('DOMContentLoaded', renderTags);
 
+  const slider = document.getElementById('weight-slider');
+  const weightValue = document.getElementById('weight-value');
+  
+  weightValue.textContent = slider.value; // Inicializa com o valor do slider
+
+  // Atualiza o valor do peso quando o slider é movido
+  slider.addEventListener('input', () => {
+    weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
+
+  });
+
 });
 

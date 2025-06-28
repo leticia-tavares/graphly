@@ -59,6 +59,12 @@
       <section class="section">
         <h2>Community Detection</h2>
 
+        <div>
+          <p>Select the weight on the edges:</p>
+          <input type="range" id="weight-slider" min="0" max="1" step="0.01" value="0.5">
+            <span id="weight-value">0.5</span>
+        </div>
+
           <form id="graph-form">
               <label for="algorithm">Select Algorithm</label>
               <select id="algorithm" name="algorithm">
