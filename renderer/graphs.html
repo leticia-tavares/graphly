@@ -50,7 +50,7 @@
       <section class="section">
         <div class="graph-display">
           <h2>Generated Graph</h2>
-          <!--  <img src="../data/result.png" alt="Your generated graph"> -->
+          <img src="../data-temp/grafo_original.png"  alt="Your generated graph">
         </div>
       </section>
     </div>
@@ -60,18 +60,18 @@
         <h2>Community Detection</h2>
 
         <div>
-          <p>Select the weight on the edges:</p>
+          <p>Choose Cosine Similarity:</p>
           <input type="range" id="weight-slider" min="0" max="1" step="0.01" value="0.5">
             <span id="weight-value">0.5</span>
+            <br>
         </div>
 
           <form id="graph-form">
               <label for="algorithm">Select Algorithm</label>
               <select id="algorithm" name="algorithm">
-                <option value="force-directed">Force-Directed Layout</option>
-                <option value="circular">Circular Layout</option>
-                <option value="hierarchical">Hierarchical Layout</option>
-                <option value="random">Random Layout</option>
+                <option value="louvian">Louvian Algorithm</option>
+                <!-- <option value="force-directed">Force-Directed Layout</option> -->
+                <!-- <option value="circular">Circular Layout</option> -->
               </select>
 
             <br><br>

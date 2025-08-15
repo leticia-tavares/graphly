@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dataset = await window.electronAPI.loadDataset();
 
   if (!dataset || !dataset.content) {
-    //alert("Dataset não carregado! Você precisa selecionar um dataset primeiro.");
     const response = await window.electronAPI.showDialog({
       type: 'info',
       buttons: ['OK'],
