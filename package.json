@@ -1,5 +1,5 @@
 {
-  "name": "Graphly",
+  "name": "graphly",
   "version": "0.2.1",
   "main": "main.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "build": {
     "appId": "com.graphly.name",
     "productName": "Graphly",
-    "icon": "assets/icons/app-icon", 
+    "icon": "assets/icons/app-icon",
     "win": {
       "icon": "assets/logo-circle.ico"
     },
@@ -20,7 +20,7 @@
     "linux": {
       "icon": "assets/icons"
     }
-  },  
+  },
   "keywords": [
     "Node.js",
     "Electron",
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "apexcharts": "^4.5.0",
+    "danfojs": "^1.2.0",
     "papaparse": "^5.5.2"
   }
 }

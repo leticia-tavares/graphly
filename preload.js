@@ -5,13 +5,33 @@
 */
 
 const { contextBridge, ipcRenderer } = require('electron');
+const fs = require('fs');
+const path = require('path');
 
 // Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
+
+  // path methodss
+  getPath: (name) => path.join(__dirname, name),
+
+  // fs methods
+  readText: async (path) => fs.promises.readFile(path, 'utf8'),
+
+  readFile: (path) => fs.readFileSync(path, 'utf8'),  // síncrono
+  readFileAsync: (path) => fs.promises.readFile(path, 'utf8'), // assíncrono
+
+  // select file 
   selectFile: () => ipcRenderer.invoke('select-file'),
+
+  // navigate 
   navigate: (page) => ipcRenderer.send('navigate', page),
+
+  //theme
   setTheme: (theme) => ipcRenderer.send('set-theme', theme),
+
+  // diallgs messages
   showDialog: (message) => ipcRenderer.invoke('show-dialog', message),
+
   // data set
   saveDataset: (data) => ipcRenderer.send('save-dataset', data),
   loadDataset: () => ipcRenderer.invoke('load-dataset')

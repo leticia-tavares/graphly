@@ -2,7 +2,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const excludeSelect = document.getElementById('exclude-columns');
   const dataset = await window.electronAPI.loadDataset();
+  const filePath =  window.electronAPI.getPath('data-temp/comunidades.csv'); // .csv with detceted communities
 
+  let fullData = []; // Stores all the parsed data from the CSV
+  let columns = []; // Stores all column names from the CSV
+  let communitiesQty = 0; // Stores the number of communities detected
+
+  // Check if dataset is loaded
   if (!dataset || !dataset.content) {
     const response = await window.electronAPI.showDialog({
       type: 'info',
@@ -15,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // Generate the final dataset content
   Papa.parse(dataset.content, {
     header: true,
     dynamicTyping: true,
@@ -92,6 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   excludeSelect.addEventListener('change', updateSelectedColumns);
   document.addEventListener('DOMContentLoaded', renderTags);
 
+  // Slider for cosine similarity weight
   const slider = document.getElementById('weight-slider');
   const weightValue = document.getElementById('weight-value');
   
@@ -101,6 +109,58 @@ document.addEventListener('DOMContentLoaded', async () => {
   slider.addEventListener('input', () => {
     weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
 
+  });
+
+  // Função para ler o conteúdo do arquivo
+  async function getFileContent(filePath) {
+    try {
+      const content = await window.electronAPI.readFile(filePath, 'utf-8');
+      return content;
+    } catch (error) {
+      console.error('Erro ao ler o arquivo:', error);
+      throw error;
+    }
+  }
+
+  function parseCSV(content){
+      Papa.parse(content, {
+      header: true, 
+      dynamicTyping: true, 
+      skipEmptyLines: true, 
+      complete: (results) => {
+          fullData = results.data; 
+          columns = results.meta.fields; 
+
+          communitiesQty = Math.max(...fullData.map(row => row['Comunidade'])) + 1;
+          console.log('Comunidades detectadas:', communitiesQty); 
+      },
+      error: (err) => {
+          console.error('Error parsing the CSV:', err);
+          alert('Error processing the CSV file. Please check the file format.');
+      }
+  });
+  }
+
+  function renderCommunityChart(data){
+
+
+  }
+
+  const detectCommunityBtn = document.getElementById('detect-community');
+  
+  detectCommunityBtn.addEventListener('click', async () => {
+    console.log('Detecting communities...');
+    let csv;
+    try {
+      csv = await window.electronAPI.readFile(filePath);
+      console.log('File read successfully');
+
+    } catch (error){
+      console.error('Error reading file:', error);
+      return;
+    }
+
+    parseCSV(csv);
   });
 
 });

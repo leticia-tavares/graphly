@@ -243,10 +243,10 @@ h2 {
   text-align: center;
 }
 
-.graph-display img {
+.img-display img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* or contain */
+  object-fit: contain; /* or contain */
 }
 
 /* Dataset */
@@ -285,34 +285,20 @@ tr:hover {
   padding: 2rem;
 }
 
-.graph-container {
-  display: flex;
-  gap: 2rem;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
+/* Container */
 
-.graph-container .btn-primary{
-  display: block;
-  width: 200px; /* Defina a largura que desejar */
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.graph-container > section {
-  flex: 1;
-  min-width: 300px;
-  background: #fff;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.graph-container h2 {
-  margin-bottom: 1rem;
-  font-size: 1.25rem;
-}
-
+  .graph-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* duas colunas iguais */
+  }
+  .graph-container section {
+    padding: 3rem 2rem;
+    max-width: 1200px;
+    margin: 2rem auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
 
 label {
   display: block;
@@ -403,6 +389,49 @@ select {
   font-weight: 500;
   color: #333;
 }
+
+.range-input {
+  margin: 1rem 0;
+}
+
+#weight-slider {
+  width: 250px;
+  height: 6px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #4cafef, #007bff);
+  outline: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+#weight-slider:hover {
+  background: linear-gradient(90deg, #4cafef, #0056b3);
+}
+
+/* Valor ao lado */
+#weight-value {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #007bff;
+}
+
+.slider-wrapper {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.slider-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+
 
 /* Formulários */
 input[type="text"], input[type="number"], select {
