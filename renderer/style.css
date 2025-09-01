@@ -441,6 +441,15 @@ input[type="text"], input[type="number"], select {
   border-radius: 8px;
 }
 
+/* Gráficos */
+#chart-config-area { margin-top: 20px; padding: 15px; border: 1px solid #ddd; background-color: #f9f9f9; border-radius: 5px; }
+#chart-config-area h3, #chart-config-area h4 { margin-top: 0; color: #333; }
+#chart-config-area label { display: inline-block; margin-right: 10px; min-width: 160px; font-size: 0.9em; color: #555;}
+#chart-config-area select { margin-bottom: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; min-width: 180px; }
+.config-group { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+.config-group:last-child { border-bottom: none; margin-bottom: 0;}
+.config-group br { display: none; } /* Esconde <br> se não for necessário */
+
 /* Footer */
 footer {
   background-color: #222;

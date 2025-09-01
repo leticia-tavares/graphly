@@ -153,7 +153,7 @@ function createWindow(){
       label: name,
       submenu: [{
         label: 'Quit',
-        ccelerator: 'Command+Q',
+        accelerator: 'Command+Q',
         click: function(){
           app.quit();
         }
@@ -208,9 +208,19 @@ ipcMain.handle('select-file', async () => {
       return null;
     }
     
-    const fileStats = fs.statSync(filePaths[0]);
+    // Uso de statSync/readFileSync bloqueia o event loop do processo principal, afetando a responsividade da aplicação.
+  /*   const fileStats = fs.statSync(filePaths[0]);
     const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
-    return { path: filePaths[0], content: fileContent, size: fileStats.size };
+    return { path: filePaths[0], content: fileContent, size: fileStats.size }; */
+    try {
+      const fileStats = await fs.promises.stat(filePaths[0]);
+      const fileContent = await fs.promises.readFile(filePaths[0], 'utf-8');
+      return { path: filePaths[0], content: fileContent, size: fileStats.size };
+      
+    } catch (err) {
+      dialog.showErrorBox('Error reading file.', err.message);
+      return null;
+    }
   });
 
 ipcMain.handle('show-dialog', async (event, dialogOptions) => {
