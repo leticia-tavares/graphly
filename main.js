@@ -239,7 +239,20 @@ ipcMain.handle('load-dataset', () => {
     return savedDataset;
   } 
   return null;
-})
+});
+
+ipcMain.handle('get-path', (_e, relative) => {
+  // Salva dentro da pasta de dados do app (userData)
+  // Ex.: .../AppData/Roaming/SeuApp/data/filtered_dataset.csv
+  const base = app.getPath('userData');
+  return path.join(base, relative);
+});
+
+ipcMain.handle('write-file', async (_e, { filePath, content }) => {
+  await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+  await fs.promises.writeFile(filePath, content, 'utf8');
+  return true;
+});
 
 
 // Application ready event

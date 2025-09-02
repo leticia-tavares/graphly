@@ -38,7 +38,7 @@
     <!-- <div class="graph-container"> -->
       
       <section class="section">
-        <h2>Generate Graph from Dataset</h2>
+        <h2>🧠Generate Graph from Dataset</h2>
 
           <form id="graph-form">
               <label for="exclude-columns">Choose columns to exclude</label>
@@ -70,7 +70,7 @@
       <section class="section">
         
         <section class="section">
-          <h2>Graph Information</h2>
+          <h2>📊Graph Information</h2>
 
           <div id="cards" class="card-container">
             <div class="data-card">
@@ -98,20 +98,23 @@
 
         <section class="section">
           <div class="img-display">
-            <h2>Generated Graph</h2>
+            <h2>🔍Generated Graph</h2>
             <img src="../data-temp/grafo_original.png"  alt="Your generated graph">
           </div>
+          <button id="detect-community" class="btn-primary">Run Community Detection</button>
         </section>
       </section>
 
       <section class="section">
-        <h2>Community Detection</h2>
+        <h2>🧩Community Detection</h2>
         <!-- comunidades, tamanho e modularidade -->
         <div id="community-display" class="chart"></div>
         <div class="charts-output-area">
           <div id="barras" class="chart"></div>
         </div>
-        <button id="detect-community" class="btn-primary">Run</button>
+        <!-- <button id="detect-community" class="btn-primary">Run</button> -->
+        <!-- Placeholder button for future export functionality -->
+        <button id="export-data" class="btn-secondary">Export Graph &amp; Community Data</button>
       </section>
   </main>
 

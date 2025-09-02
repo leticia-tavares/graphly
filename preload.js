@@ -11,6 +11,9 @@ const path = require('path');
 // Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
 
+  getPath: (relative) => ipcRenderer.invoke('get-path', relative),
+  writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
+
   // path methodss
   getPath: (name) => path.join(__dirname, name),
 

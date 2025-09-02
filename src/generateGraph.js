@@ -3,13 +3,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const excludeSelect = document.getElementById('exclude-columns');
   const dataset = await window.electronAPI.loadDataset();
   const filePath =  window.electronAPI.getPath('data-temp/comunidades.csv'); // .csv with detceted communities
-
   const barsContainer = document.querySelector("#barras");
-
 
   let fullData = []; // Stores all the parsed data from the CSV
   let communitiesQty = 0; // Stores the number of communities detected
   let nodesPerCommunity = {}; // Stores nodes per community
+  let originalColumns = []; // Original columns from the dataset
+  let originalData = []; // Original data from the dataset
 
   // Check if dataset is loaded
   if (!dataset || !dataset.content) {
@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  
+  // 1) Parse do dataset original e popular select
   // Generate the final dataset content
   Papa.parse(dataset.content, {
     header: true,
@@ -31,8 +33,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     skipEmptyLines: true,
     complete: (results) => {
       console.log('Resultados completos do PapaParse:', results);
+      
 
       const columns = results.meta.fields;
+      originalColumns = [...columns]; // Guarda as colunas originais
+      originalData = [...results.data]; // Guarda os dados originais
 
       if (columns.length < 2) {
         console.error('CSV deve ter no mínimo duas colunas.');
@@ -55,6 +60,99 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   let selectedItems = []; // Array para gerenciar os itens selecionados
+
+  const generateBtn = document.getElementById('generate-graph');
+  const updateBtn = document.getElementById('update-dataset');
+
+
+  // Evento para confirmar e mostrar todos os selecionados corretamente
+  updateBtn.addEventListener('click', () => {
+    alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
+  });
+
+  // 2) Lógica de seleção de colunas a excluir
+  excludeSelect.addEventListener('change', updateSelectedColumns);
+  document.addEventListener('DOMContentLoaded', renderTags);
+
+  
+  // 3) Exportar CSV filtrado para /data quando clicar no botão
+  updateBtn.addEventListener('click', async () => {
+    try {
+      const remainingColumns = originalColumns.filter(c => !selectedItems.includes(c));
+
+      if (remainingColumns.length === 0) {
+        await window.electronAPI.showDialog({
+          type: 'warning',
+          buttons: ['OK'],
+          title: 'Atenção',
+          message: 'Você excluiu todas as colunas. Selecione menos colunas para excluir.'
+        });
+        return;
+      }
+
+      // Filtra cada linha mantendo apenas as colunas restantes
+      const filteredRows = originalData.map(row => {
+        const out = {};
+        remainingColumns.forEach(c => { out[c] = row[c]; });
+        return out;
+      });
+
+      // Gera CSV
+      const csvOut = Papa.unparse(filteredRows);
+
+      // Caminho final: .../data/filtered_dataset.csv
+      const outPath = await window.electronAPI.getPath('data/filtered_dataset.csv');
+
+      // Garante diretório e grava arquivo
+      await window.electronAPI.writeFile(outPath, csvOut);
+
+      await window.electronAPI.showDialog({
+        type: 'info',
+        buttons: ['OK'],
+        title: 'Sucesso',
+        message: `Arquivo salvo em:\n${outPath}`
+      });
+    } catch (e) {
+      console.error(e);
+      await window.electronAPI.showDialog({
+        type: 'error',
+        buttons: ['OK'],
+        title: 'Erro ao salvar CSV',
+        message: String(e?.message || e)
+      });
+    }
+  });
+
+  // Slider for cosine similarity weight
+  const slider = document.getElementById('weight-slider');
+  const weightValue = document.getElementById('weight-value');
+  
+  weightValue.textContent = slider.value; // Inicializa com o valor do slider
+
+  // Atualiza o valor do peso quando o slider é movido
+  slider.addEventListener('input', () => {
+    weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
+
+  });
+  
+
+  const detectCommunityBtn = document.getElementById('detect-community');
+  
+  detectCommunityBtn.addEventListener('click', async () => {
+    console.log('Detecting communities...');
+    let csv;
+    try {
+      csv = await window.electronAPI.readFile(filePath);
+      console.log('File read successfully');
+
+    } catch (error){
+      console.error('Error reading file:', error);
+      return;
+    }
+
+    parseCSV(csv);
+    renderCommunityChart(fullData);
+  });
 
   function updateSelectedColumns() {
 
@@ -91,30 +189,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       selectedContainer.appendChild(tag);
     });
   }
-
-  const generateBtn = document.getElementById('generate-graph');
-  const updateBtn = document.getElementById('update-dataset');
-
-
-  // Evento para confirmar e mostrar todos os selecionados corretamente
-  updateBtn.addEventListener('click', () => {
-    alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
-  });
-
-  excludeSelect.addEventListener('change', updateSelectedColumns);
-  document.addEventListener('DOMContentLoaded', renderTags);
-
-  // Slider for cosine similarity weight
-  const slider = document.getElementById('weight-slider');
-  const weightValue = document.getElementById('weight-value');
-  
-  weightValue.textContent = slider.value; // Inicializa com o valor do slider
-
-  // Atualiza o valor do peso quando o slider é movido
-  slider.addEventListener('input', () => {
-    weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
-
-  });
 
   function parseCSV(content){
       Papa.parse(content, {
@@ -163,24 +237,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   barsChartInstance.render();
   }
-
-  const detectCommunityBtn = document.getElementById('detect-community');
-  
-  detectCommunityBtn.addEventListener('click', async () => {
-    console.log('Detecting communities...');
-    let csv;
-    try {
-      csv = await window.electronAPI.readFile(filePath);
-      console.log('File read successfully');
-
-    } catch (error){
-      console.error('Error reading file:', error);
-      return;
-    }
-
-    parseCSV(csv);
-    renderCommunityChart(fullData);
-  });
 
 });
 
