@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Graphly - Generate Graph</title>
   <script src="../node_modules/papaparse/papaparse.min.js"></script>
+  <script src="../node_modules/apexcharts/dist/apexcharts.min.js"></script>
   <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  -->
   <link rel="stylesheet" href="style.css">
   <script src="../src/generateGraph.js"></script>
@@ -44,7 +45,8 @@
               <select id="exclude-columns" multiple size="5" name="exclude-columns">
               </select>
               <div class="selected-columns" id="selected-columns"></div>
-            <button id="generate-graph" type="submit" class="btn-primary">Generate Graph</button>
+            <!-- <button id="generate-graph" type="submit" class="btn-primary">Generate Graph</button> -->
+            <button id="update-dataset" type="submit" class="btn-primary">Update dataset</button>
           </form>
 
           <div class="range-input">
@@ -60,6 +62,8 @@
             </div>
             <p>Nodes are created when the similarity is greater or equal to the threshold</p>
         </div>
+
+        <button id="generate-graph" type="submit" class="btn-primary">Generate Graph</button>
 
       </section>
 

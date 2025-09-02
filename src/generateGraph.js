@@ -4,9 +4,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dataset = await window.electronAPI.loadDataset();
   const filePath =  window.electronAPI.getPath('data-temp/comunidades.csv'); // .csv with detceted communities
 
+  const barsContainer = document.querySelector("#barras");
+
+
   let fullData = []; // Stores all the parsed data from the CSV
-  let columns = []; // Stores all column names from the CSV
   let communitiesQty = 0; // Stores the number of communities detected
+  let nodesPerCommunity = {}; // Stores nodes per community
 
   // Check if dataset is loaded
   if (!dataset || !dataset.content) {
@@ -90,9 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   const generateBtn = document.getElementById('generate-graph');
+  const updateBtn = document.getElementById('update-dataset');
+
 
   // Evento para confirmar e mostrar todos os selecionados corretamente
-  generateBtn.addEventListener('click', () => {
+  updateBtn.addEventListener('click', () => {
     alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
   });
 
@@ -111,17 +116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   });
 
-  // Função para ler o conteúdo do arquivo
-  async function getFileContent(filePath) {
-    try {
-      const content = await window.electronAPI.readFile(filePath, 'utf-8');
-      return content;
-    } catch (error) {
-      console.error('Erro ao ler o arquivo:', error);
-      throw error;
-    }
-  }
-
   function parseCSV(content){
       Papa.parse(content, {
       header: true, 
@@ -133,6 +127,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
           communitiesQty = Math.max(...fullData.map(row => row['Comunidade'])) + 1;
           console.log('Comunidades detectadas:', communitiesQty); 
+
+          nodesPerCommunity = {};
+          fullData.forEach(row => {
+              const community = row['Comunidade'];
+              if (!nodesPerCommunity[community]) {
+                  nodesPerCommunity[community] = 0;
+              }
+              nodesPerCommunity[community]++;
+          });
       },
       error: (err) => {
           console.error('Error parsing the CSV:', err);
@@ -141,9 +144,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   }
 
-  function renderCommunityChart(data){
+  function renderCommunityChart(){
+    const categories = Array.from({length: communitiesQty}, (_, i) => `Comunidade ${i}`);
+    const values = categories.map((_, i) => nodesPerCommunity[i] || 0);
 
-
+    barsChartInstance = new ApexCharts(barsContainer, {
+      chart: { type: 'bar', height: 350, toolbar: { show: true } },
+      title: { text: "Bar Chart: Number of Communities detected", align: 'center' },
+      series: [{ name: "Nodes", data: values }],
+      xaxis: { 
+          categories: categories,
+          title: { text: "Communities" },
+          labels: { rotate: -45, rotateAlways: true }
+      },
+      yaxis: {
+          title: { text:"Number of Nodes" }
+      }
+  });
+  barsChartInstance.render();
   }
 
   const detectCommunityBtn = document.getElementById('detect-community');
@@ -161,6 +179,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     parseCSV(csv);
+    renderCommunityChart(fullData);
   });
 
 });

@@ -20,7 +20,8 @@ themeSelect.addEventListener('change', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    const savedThemed = localStorage.getItem('theme') || 'system';
+    const savedTheme = localStorage.getItem('theme') || 'system';
     themeSelect.value = savedTheme;
     applyTheme(savedTheme);
 });
+
