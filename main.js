@@ -209,11 +209,7 @@ ipcMain.handle('select-file', async () => {
       dialog.showErrorBox('Error! Extension not supported.', 'Please, upload only .csv files.');
       return null;
     }
-    
-    // Uso de statSync/readFileSync bloqueia o event loop do processo principal, afetando a responsividade da aplicação.
-  /*   const fileStats = fs.statSync(filePaths[0]);
-    const fileContent = fs.readFileSync(filePaths[0], 'utf-8');
-    return { path: filePaths[0], content: fileContent, size: fileStats.size }; */
+    // Read the file content and return it to the Renderer process
     try {
       const fileStats = await fs.promises.stat(filePaths[0]);
       const fileContent = await fs.promises.readFile(filePaths[0], 'utf-8');
@@ -287,14 +283,6 @@ ipcMain.handle('export-file', async (event, relativeName) => {
     
     return { canceled: true, error: err.message };
   }
-
-/*   const destDir = filePath[0]; // SO FALTA COPIAR O ARQUIVO AQUI!!!!!!!!!!!!!!!!!!s
-
-  const destPath = path.join(destDir, relativeName);
-  await fs.promises.copyFile(sourcePath, destPath);  // copia o ficheiro:contentReference[oaicite:3]{index=3}
-
-  console.log(`User selected path: ${filePath}`);
-  return { canceled: false, filePath }; */
 });
 
 

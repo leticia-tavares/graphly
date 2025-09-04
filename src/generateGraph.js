@@ -5,6 +5,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const filePath =  window.electronAPI.getPath('data-temp/comunidades.csv'); // .csv with detceted communities
   const barsContainer = document.querySelector("#barras");
 
+  // Slider for cosine similarity weight
+  const slider = document.getElementById('weight-slider');
+  const weightValue = document.getElementById('weight-value');
+
+  let selectedItems = []; // Array para gerenciar os itens selecionados
+
+  const generateBtn = document.getElementById('generate-graph');
+  const updateBtn = document.getElementById('update-dataset');
+  const detectCommunityBtn = document.getElementById('detect-community');
+  const exportBtn = document.getElementById('export-data');
+  
+  weightValue.textContent = slider.value; // Inicializa com o valor do slider
+
   let fullData = []; // Stores all the parsed data from the CSV
   let communitiesQty = 0; // Stores the number of communities detected
   let nodesPerCommunity = {}; // Stores nodes per community
@@ -24,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  
   // 1) Parse do dataset original e popular select
   // Generate the final dataset content
   Papa.parse(dataset.content, {
@@ -59,24 +71,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  let selectedItems = []; // Array para gerenciar os itens selecionados
-
-  const generateBtn = document.getElementById('generate-graph');
-  const updateBtn = document.getElementById('update-dataset');
-
-
-  // Evento para confirmar e mostrar todos os selecionados corretamente
-  updateBtn.addEventListener('click', () => {
-    alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
-  });
-
   // 2) Lógica de seleção de colunas a excluir
   excludeSelect.addEventListener('change', updateSelectedColumns);
   document.addEventListener('DOMContentLoaded', renderTags);
-
   
   // 3) Exportar CSV filtrado para /data quando clicar no botão
   updateBtn.addEventListener('click', async () => {
+    alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
+
     try {
       const remainingColumns = originalColumns.filter(c => !selectedItems.includes(c));
 
@@ -90,6 +92,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      createCSVFile(originalData, 'data/original_dataset.csv');
+
       // Filtra cada linha mantendo apenas as colunas restantes
       const filteredRows = originalData.map(row => {
         const out = {};
@@ -97,21 +101,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return out;
       });
 
-      // Gera CSV
-      const csvOut = Papa.unparse(filteredRows);
+     createCSVFile(filteredRows, 'data/filtered_dataset.csv');
 
-      // Caminho final: .../data/filtered_dataset.csv
-      const outPath = await window.electronAPI.getPath('data/filtered_dataset.csv');
-
-      // Garante diretório e grava arquivo
-      await window.electronAPI.writeFile(outPath, csvOut);
-
-      await window.electronAPI.showDialog({
-        type: 'info',
-        buttons: ['OK'],
-        title: 'Sucesso',
-        message: `Arquivo salvo em:\n${outPath}`
-      });
     } catch (e) {
       console.error(e);
       await window.electronAPI.showDialog({
@@ -123,21 +114,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  // Slider for cosine similarity weight
-  const slider = document.getElementById('weight-slider');
-  const weightValue = document.getElementById('weight-value');
-  
-  weightValue.textContent = slider.value; // Inicializa com o valor do slider
-
   // Atualiza o valor do peso quando o slider é movido
   slider.addEventListener('input', () => {
     weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
 
   });
-  
 
-  const detectCommunityBtn = document.getElementById('detect-community');
-  
   detectCommunityBtn.addEventListener('click', async () => {
     console.log('Detecting communities...');
     let csv;
@@ -154,8 +136,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCommunityChart(fullData);
   });
 
-  const exportBtn = document.getElementById('export-data');
-
   exportBtn.addEventListener('click', async () => {
     const result = await window.electronAPI.exportFile("filtered_dataset.csv");
 
@@ -164,6 +144,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert("Export canceled by the user.");
     }
   });
+
+  async function createCSVFile(data, path){
+    // Gera CSV filtrado
+    const csvOut = Papa.unparse(data);
+
+    // Caminho final: .../data/filtered_dataset.csv
+    const outPath = await window.electronAPI.getPath(path);
+
+    // Garante diretório e grava arquivo
+    await window.electronAPI.writeFile(outPath, csvOut);
+  }
 
   function updateSelectedColumns() {
 
