@@ -14,6 +14,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPath: (relative) => ipcRenderer.invoke('get-path', relative),
   writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
 
+  exportFile: (fileName) => ipcRenderer.invoke('export-file', fileName),
+
   // path methodss
   getPath: (name) => path.join(__dirname, name),
 

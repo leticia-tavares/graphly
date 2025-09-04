@@ -154,6 +154,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderCommunityChart(fullData);
   });
 
+  const exportBtn = document.getElementById('export-data');
+
+  exportBtn.addEventListener('click', async () => {
+    const result = await window.electronAPI.exportFile("filtered_dataset.csv");
+
+    if (result.canceled) {
+      console.log('Export canceled by user.');
+      alert("Export canceled by the user.");
+    }
+  });
+
   function updateSelectedColumns() {
 
     // Verifica opções selecionadas e atualiza o array

@@ -6,6 +6,8 @@ const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electr
 const path = require('path');
 const fs = require('fs');
 
+let dataDir;
+
 // ----- Global Variables -----
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
@@ -15,7 +17,7 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   if(err) {
     return console.error(err);
   }
-  const dataDir = path.join(__dirname, 'data');
+  dataDir = path.join(__dirname, 'data');
   console.log("Directory successfuly created!");
 });
 
@@ -252,6 +254,47 @@ ipcMain.handle('write-file', async (_e, { filePath, content }) => {
   await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
   await fs.promises.writeFile(filePath, content, 'utf8');
   return true;
+});
+
+ipcMain.handle('export-file', async (event, relativeName) => {
+  // Caminho absoluto do arquivo dentro do projeto
+  const sourcePath = path.join(__dirname, 'data', relativeName);
+  
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    title: 'Save CSV file',
+    defaultPath: relativeName,
+    filters: [
+      { name: 'CSV Files', extensions: ['csv'] },
+      { name: 'All Files', extensions: ['*'] }
+    ]
+  });
+
+  
+  if (canceled || filePath.length === 0) {
+    console.log('User canceled the save dialog.');
+    return { canceled: true };
+  }
+
+  // Copia o arquivo
+  try {
+    await fs.promises.copyFile(sourcePath, filePath);
+    console.log(`Arquivo exportado para: ${filePath}`);
+    return { canceled: false, filePath };
+
+  } catch (err) {
+    console.error('Erro ao exportar arquivo:', err);
+    dialog.showErrorBox('Erro ao exportar', err.message);
+    
+    return { canceled: true, error: err.message };
+  }
+
+/*   const destDir = filePath[0]; // SO FALTA COPIAR O ARQUIVO AQUI!!!!!!!!!!!!!!!!!!s
+
+  const destPath = path.join(destDir, relativeName);
+  await fs.promises.copyFile(sourcePath, destPath);  // copia o ficheiro:contentReference[oaicite:3]{index=3}
+
+  console.log(`User selected path: ${filePath}`);
+  return { canceled: false, filePath }; */
 });
 
 
