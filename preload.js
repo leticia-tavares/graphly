@@ -10,10 +10,15 @@ const path = require('path');
 
 // Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
+  // python methods
+  pyReceive: () => ipcRenderer.invoke('python-init'),
+  pyEnd: () => ipcRenderer.invoke('python-end'),
+  onPythonOutput: (cb) => ipcRenderer.on('python-output', (event, data) => cb(data)),
+  onPythonError: (cb) => ipcRenderer.on('python-error', (event, data) => cb(data)),
+  onPythonExit: (cb) => ipcRenderer.on('python-exit', (event, data) => cb(data)),
 
   getPath: (relative) => ipcRenderer.invoke('get-path', relative),
   writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
-
   exportFile: (fileName) => ipcRenderer.invoke('export-file', fileName),
 
   // path methodss

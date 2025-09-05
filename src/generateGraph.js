@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const filePath =  window.electronAPI.getPath('data-temp/comunidades.csv'); // .csv with detceted communities
   const barsContainer = document.querySelector("#barras");
 
+  // cards
+  const totalNodesCard = document.getElementById('total-nodes');
+  const totalEdgesCard = document.getElementById('total-edges');
+  const avgDegreeCard = document.getElementById('avg-degree');
+  const lowerLimitCard = document.getElementById('lower-limit');
+
   // Slider for cosine similarity weight
   const slider = document.getElementById('weight-slider');
   const weightValue = document.getElementById('weight-value');
@@ -119,6 +125,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   slider.addEventListener('input', () => {
     weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
 
+  });
+
+  generateBtn.addEventListener('click', async () => {
+     // 1) Registra ouvintes primeiro
+    window.electronAPI.onPythonOutput((data) => {
+      console.log('Recebido do Python:', data);
+      // trate/parse aqui e atualize a UI
+      const jsonObj = JSON.parse(data);
+
+      totalNodesCard.textContent = jsonObj.nodes || 'N/A';
+      totalEdgesCard.textContent = jsonObj.edges || 'N/A';
+      avgDegreeCard.textContent = jsonObj.degree || 'N/A';
+      lowerLimitCard.textContent = jsonObj.limit || 'N/A';
+    });
+
+    window.electronAPI.onPythonError((err) => {
+      console.error('Erro do Python:', err);
+    });
+
+    window.electronAPI.onPythonExit(({ code, signal }) => {
+      console.log(`Python finalizado: code=${code} signal=${signal || 'none'}`);
+    });
+
+    // 2) Só então inicia
+    const result = await window.electronAPI.pyReceive();
+    console.log(result); // "Python iniciado!"
   });
 
   detectCommunityBtn.addEventListener('click', async () => {

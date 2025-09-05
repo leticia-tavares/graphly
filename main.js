@@ -8,7 +8,7 @@ const fs = require('fs');
 
 // python integration
 const spawn = require('child_process');
-const pythonProcess = spawn.spawn('python', ['scripts/test.py', 'Hello from Node.js!']);
+let pythonProcess;
 
 // ----- Global Variables -----
 let mainWindow;           // stores the app main window
@@ -21,18 +21,6 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   }
   dataDir = path.join(__dirname, 'data');
   console.log("Directory successfuly created!");
-});
-
-pythonProcess.stdout.on('data', (data) => {
-  console.log(`\nPython Output: ${data}`);
-});
-
-pythonProcess.stderr.on('data', (data) => {
-  console.error(`\nPython Error: ${data}`);
-});
-
-pythonProcess.on('close', (code) => {
-  console.log(`\nPython process exited with code ${code}`);   
 });
 
 /** 
@@ -193,6 +181,46 @@ function createWindow(){
     });
 };
 
+ipcMain.handle('python-init', (event) => {
+
+  const scriptPath = path.join(__dirname, 'scripts/test.py'); // ajuste o nome/caminho
+
+  pythonProcess = spawn.spawn('python', ['-u', scriptPath], {
+    env: { ...process.env, PYTHONUNBUFFERED: '1' }, // redundante mas ajuda
+    cwd: __dirname
+  });
+  
+  //pythonProcess = spawn.spawn('python', ['scripts/test.py']);
+
+  pythonProcess.stdout.on('data', (data) => {
+    const output = data.toString();
+    // console.log(`\nPython Output: ${output}`);
+    event.sender.send('python-output', output);
+  });
+
+  pythonProcess.stderr.on('data', (data) => {
+    const err = data.toString();
+    console.error('Python Error:', err);
+    event.sender.send('python-error', err);
+  });
+
+  pythonProcess.on('close', (code, signal) => {
+    const msg = `Processo finalizado. code=${code} signal=${signal || 'none'}`;
+    console.log(msg);
+    event.sender.send('python-exit', { code, signal });
+  });
+  return 'Python iniciado!';
+});
+
+ipcMain.handle('python-end', () => {
+  if (pythonProcess && !pythonProcess.killed) {
+    pythonProcess.kill(); // geralmente SIGTERM
+  }
+  return 'Python encerrado!';
+
+});
+
+
 // Handle navigation request from the Renderer process
 ipcMain.on('navigate', (event, page) => {
 /*   let pathToPage = path.join(__dirname, `renderer/${page}`);
@@ -298,7 +326,6 @@ ipcMain.handle('export-file', async (event, relativeName) => {
     return { canceled: true, error: err.message };
   }
 });
-
 
 // Application ready event
 app.whenReady().then(() => {
