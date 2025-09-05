@@ -56,6 +56,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
       }
 
+      // Save the original dataset to /data/original_dataset.csv
+      createCSVFile(originalData, 'data/original_dataset.csv');
+
       excludeSelect.innerHTML = ""; // Limpa opções anteriores
 
       columns.forEach(col => {
@@ -91,8 +94,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         return;
       }
-
-      createCSVFile(originalData, 'data/original_dataset.csv');
 
       // Filtra cada linha mantendo apenas as colunas restantes
       const filteredRows = originalData.map(row => {

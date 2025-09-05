@@ -6,7 +6,9 @@ const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electr
 const path = require('path');
 const fs = require('fs');
 
-let dataDir;
+// python integration
+const spawn = require('child_process');
+const pythonProcess = spawn.spawn('python', ['scripts/test.py', 'Hello from Node.js!']);
 
 // ----- Global Variables -----
 let mainWindow;           // stores the app main window
@@ -19,6 +21,18 @@ fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
   }
   dataDir = path.join(__dirname, 'data');
   console.log("Directory successfuly created!");
+});
+
+pythonProcess.stdout.on('data', (data) => {
+  console.log(`\nPython Output: ${data}`);
+});
+
+pythonProcess.stderr.on('data', (data) => {
+  console.error(`\nPython Error: ${data}`);
+});
+
+pythonProcess.on('close', (code) => {
+  console.log(`\nPython process exited with code ${code}`);   
 });
 
 /** 
