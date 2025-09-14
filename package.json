@@ -11,6 +11,18 @@
     "appId": "com.graphly.name",
     "productName": "Graphly",
     "icon": "assets/icons/app-icon",
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "preload.js",
+      "package.json"
+    ],
+    "extraResources": [
+      "graphly_requirements.txt",
+      { "from": "wheels", "to": "wheels", "filter": ["**/*"] },
+      { "from": "python", "to": "python", "filter": ["**/*.py","**/*.txt","**/*.pkl"] }
+    ],
     "win": {
       "icon": "assets/logo-circle.ico"
     },

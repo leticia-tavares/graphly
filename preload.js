@@ -10,13 +10,6 @@ const path = require('path');
 
 // Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
-  // python methods
-  pyReceive: (value) => ipcRenderer.invoke('python-init', value),
-  pySend: (data) => ipcRenderer.invoke('python-send', data),
-  pyEnd: () => ipcRenderer.invoke('python-end'),
-  onPythonOutput: (cb) => ipcRenderer.on('python-output', (event, data) => cb(data)),
-  onPythonError: (cb) => ipcRenderer.on('python-error', (event, data) => cb(data)),
-  onPythonExit: (cb) => ipcRenderer.on('python-exit', (event, data) => cb(data)),
 
   getPath: (relative) => ipcRenderer.invoke('get-path', relative),
   writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
@@ -47,3 +40,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveDataset: (data) => ipcRenderer.send('save-dataset', data),
   loadDataset: () => ipcRenderer.invoke('load-dataset')
 });
+
+// Expose Python API
+const api = {
+  run: (scriptPath, args=[]) => ipcRenderer.invoke('python:run', scriptPath, args),
+  detect: (params) => ipcRenderer.invoke('python:detect', params),
+  onLog: (cb) => ipcRenderer.on('python:log', (_ev, data) => cb?.(data)),
+
+  pyReceive: (value) => ipcRenderer.invoke('python-init', value),
+  pySend: (data) => ipcRenderer.invoke('python-send', data),
+  pyEnd: () => ipcRenderer.invoke('python-end'),
+  onPythonOutput: (cb) => ipcRenderer.on('python-output', (event, data) => cb(data)),
+  onPythonError: (cb) => ipcRenderer.on('python-error', (event, data) => cb(data)),
+  onPythonExit: (cb) => ipcRenderer.on('python-exit', (event, data) => cb(data)),
+
+};
+
+contextBridge.exposeInMainWorld('pythonAPI', api); 

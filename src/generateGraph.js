@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   generateBtn.addEventListener('click', async () => {
-     // 1) Registra ouvintes primeiro
+/*      // 1) Registra ouvintes primeiro
     window.electronAPI.onPythonOutput((data) => {
       console.log('Recebido do Python:', data);
       // trate/parse aqui e atualize a UI
@@ -151,7 +151,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2) Só então inicia
     const result = await window.electronAPI.pyReceive(cosSim);
-    console.log(result); // "Python iniciado!"
+    console.log(result); // "Python iniciado!" */
+
+    const code = await window.pythonAPI.run('test.py', ['--foo', 'bar']);
+    console.log('Python saiu com código:', code);
 
     // const sendResult = await window.electronAPI.pySend(cosSim);
     // console.log(sendResult); // "Mensagem enviada para o Python."

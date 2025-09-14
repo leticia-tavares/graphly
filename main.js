@@ -7,12 +7,76 @@ const path = require('path');
 const fs = require('fs');
 
 // python integration
-const spawn = require('child_process');
-let pythonProcess;
+// const spawn = require('child_process');
+// const { spawnSync, spawn } = require('child_process');
+// let pythonProcess;
+// let PYTHON_BIN;
+
+const py = require('./bootstrap-python');
+let PYTHON_BIN;
+
 
 // ----- Global Variables -----
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
+/* 
+function findSystemPython() {
+  const candidates = process.platform === 'win32'
+    ? [['py', ['-3', '--version']], ['python', ['--version']]]
+    : [['python3', ['--version']], ['python', ['--version']]];
+
+  for (const [cmd, args] of candidates) {
+    const r = spawnSync(cmd, args, { encoding: 'utf8' });
+    if (r.status === 0 && /Python 3\.(1\d|[0-9])/.test(r.stdout + r.stderr)) {
+      return cmd; // ok (3.x)
+    }
+  }
+  throw new Error('Python 3 não encontrado no sistema.');
+}
+
+
+function venvPaths(venvDir) {
+  const isWin = process.platform === 'win32';
+  return {
+    python: isWin ? path.join(venvDir, 'Scripts', 'python.exe')
+                  : path.join(venvDir, 'bin', 'python'),
+  };
+}
+
+function ensurePythonEnv() {
+  const userData = app.getPath('userData');
+  const venvDir = path.join(userData, 'pyenv');
+  const reqFile = path.join(process.resourcesPath || process.cwd(), "graphly_requirements.txt");
+
+  // 1) cria venv se não existir
+  if (!fs.existsSync(path.join(venvDir, process.platform === 'win32' ? 'Scripts' : 'bin'))) {
+    const py = findSystemPython();
+    const r = spawnSync(py, ['-m', 'venv', venvDir], { stdio: 'inherit' });
+    if (r.status !== 0) throw new Error('Falha ao criar venv.');
+  }
+
+  // 2) atualiza pip/setuptools/wheel
+  const { pip } = venvPaths(venvDir);
+  let r = spawnSync(pip, ['install', '--upgrade', 'pip', 'setuptools', 'wheel'], { stdio: 'inherit' });
+  if (r.status !== 0) throw new Error('Falha atualizando pip.');
+
+  // 3) instala/atualiza requirements
+  if (fs.existsSync(reqFile)) {
+    r = spawnSync(pip, ['install', '--upgrade', '-r', reqFile], { stdio: 'inherit' });
+    if (r.status !== 0) throw new Error('Falha instalando requirements.');
+  } else {
+    console.warn('requirements não encontrado em', reqFile);
+  }
+
+  return venvPaths(venvDir).python;
+}
+ */
+
+// Resolve caminho do script na pasta python/ (dev vs empacotado)
+function resolvePy(relScript) {
+  const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
+  return path.join(root, 'python', relScript);
+}
 
 // Creating a directory to store any new data
 fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
@@ -336,16 +400,70 @@ ipcMain.handle('export-file', async (event, relativeName) => {
   }
 });
 
+// Canal para executar script
+/* ipcMain.handle('python:run', async (_evt, scriptPath, args=[]) => {
+  if (!PYTHON_BIN) throw new Error('Python não inicializado.');
+  return py.runWithAutoDeps(PYTHON_BIN, scriptPath, args);
+});
+ */
+
+
+// IPC — roda um script Python e devolve {code, stdout, stderr}
+ipcMain.handle('python:run', async (evt, relScript, args = []) => {
+  if (!PYTHON_BIN) throw new Error('Python não inicializado.');
+  const script = resolvePy(relScript);
+
+  let out = '', err = '';
+  const code = await py.runWithAutoDeps(PYTHON_BIN, script, args, {
+    onData: (ch, msg) => {
+      if (ch === 'stdout') out += msg; else err += msg;
+      // log streaming opcional para o renderer:
+      evt.sender.send('python:log', { ch, msg });
+    }
+  });
+  return { code, stdout: out, stderr: err };
+});
+
+
+
 // Application ready event
-app.whenReady().then(() => {
+/* app.whenReady().then(() => {
+
+  try {
+    PYTHON_BIN = ensurePythonEnv();
     createWindow();
 
     app.on('activate', () => {
-        //recreates the mainWindow if all windows were closed (macOS)
-        if(BrowserWindow.getAllWindows().length === 0){
-            createWindow();
-        }
+    //recreates the mainWindow if all windows were closed (macOS)
+    if(BrowserWindow.getAllWindows().length === 0){
+        createWindow();
+    }
     });
+  } catch (err) {
+    console.error('[Graphly] Falha ao preparar Python:', err);
+    dialog.showErrorBox('Erro ao preparar ambiente Python', String(err));
+  }
+  }).catch(err => {
+    console.error('[Graphly] Erro no whenReady:', err);
+});
+ */
+app.whenReady().then(async () => {
+  try {
+    const { pythonBin } = await py.prepare({
+      venvDirName: 'pyenv',
+      requirementsFileName: 'graphly_requirements.txt',
+      wheelsDirName: 'wheels',      // inclua na build p/ offline
+      offline: false,               // mude para true se quiser forçar offline
+      // indexUrl: 'https://pypi.org/simple',
+      // extraIndexUrl: 'https://<mirror>/simple',
+    });
+    PYTHON_BIN = pythonBin;
+
+    createWindow();
+  } catch (e) {
+    console.error('[Graphly] Erro preparando Python:', e);
+    dialog.showErrorBox('Python bootstrap falhou', String(e));
+  }
 });
 
 // Closes the application when all windows are closed as well 

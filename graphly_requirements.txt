@@ -1,0 +1,10 @@
+# Pacotes-base para análise de dados e grafos
+pandas>=2.2
+numpy>=1.26
+networkx>=3.3
+scikit-learn>=1.5
+matplotlib>=3.8
+python-louvain>=0.16
+
+# (Opcional) visualização interativa/extra
+# plotly>=5.22
