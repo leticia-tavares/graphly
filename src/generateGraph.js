@@ -23,7 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const exportBtn = document.getElementById('export-data');
   
   weightValue.textContent = slider.value; // Inicializa com o valor do slider
-
+  
+  let cosSim = 0;    // stores the cossine similarity threshold
   let fullData = []; // Stores all the parsed data from the CSV
   let communitiesQty = 0; // Stores the number of communities detected
   let nodesPerCommunity = {}; // Stores nodes per community
@@ -124,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Atualiza o valor do peso quando o slider é movido
   slider.addEventListener('input', () => {
     weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
-
+    cosSim = slider.value;
   });
 
   generateBtn.addEventListener('click', async () => {
@@ -151,6 +152,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2) Só então inicia
     const result = await window.electronAPI.pyReceive();
     console.log(result); // "Python iniciado!"
+
+    const sendResult = await window.electronAPI.pySend(cosSim);
+    console.log(sendResult); // "Mensagem enviada para o Python."
   });
 
   detectCommunityBtn.addEventListener('click', async () => {

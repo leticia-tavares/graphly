@@ -12,6 +12,7 @@ const path = require('path');
 contextBridge.exposeInMainWorld('electronAPI', {
   // python methods
   pyReceive: () => ipcRenderer.invoke('python-init'),
+  pySend: (data) => ipcRenderer.invoke('python-send', data),
   pyEnd: () => ipcRenderer.invoke('python-end'),
   onPythonOutput: (cb) => ipcRenderer.on('python-output', (event, data) => cb(data)),
   onPythonError: (cb) => ipcRenderer.on('python-error', (event, data) => cb(data)),
