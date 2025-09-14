@@ -150,11 +150,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // 2) Só então inicia
-    const result = await window.electronAPI.pyReceive();
+    const result = await window.electronAPI.pyReceive(cosSim);
     console.log(result); // "Python iniciado!"
 
-    const sendResult = await window.electronAPI.pySend(cosSim);
-    console.log(sendResult); // "Mensagem enviada para o Python."
+    // const sendResult = await window.electronAPI.pySend(cosSim);
+    // console.log(sendResult); // "Mensagem enviada para o Python."
   });
 
   detectCommunityBtn.addEventListener('click', async () => {

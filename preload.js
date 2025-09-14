@@ -11,7 +11,7 @@ const path = require('path');
 // Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
   // python methods
-  pyReceive: () => ipcRenderer.invoke('python-init'),
+  pyReceive: (value) => ipcRenderer.invoke('python-init', value),
   pySend: (data) => ipcRenderer.invoke('python-send', data),
   pyEnd: () => ipcRenderer.invoke('python-end'),
   onPythonOutput: (cb) => ipcRenderer.on('python-output', (event, data) => cb(data)),

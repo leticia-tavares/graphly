@@ -181,11 +181,11 @@ function createWindow(){
     });
 };
 
-ipcMain.handle('python-init', (event) => {
+ipcMain.handle('python-init', (event, value) => {
 
   const scriptPath = path.join(__dirname, 'scripts/test.py'); // ajuste o nome/caminho
 
-  pythonProcess = spawn.spawn('python', ['-u', scriptPath], {
+  pythonProcess = spawn.spawn('python', ['-u', scriptPath, value], {
     env: { ...process.env, PYTHONUNBUFFERED: '1' }, // redundante mas ajuda
     cwd: __dirname
   });
