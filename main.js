@@ -212,6 +212,15 @@ ipcMain.handle('python-init', (event) => {
   return 'Python iniciado!';
 });
 
+ipcMain.handle('python-send', (data) => {
+  data = data.toString() + '\n'; // garante que é string e termina com nova linha
+  if (pythonProcess) {
+    pythonProcess.stdin.write(data);
+    return 'Mensagem enviada para o Python.';
+  }
+});
+
+
 ipcMain.handle('python-end', () => {
   if (pythonProcess && !pythonProcess.killed) {
     pythonProcess.kill(); // geralmente SIGTERM
