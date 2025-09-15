@@ -7,12 +7,14 @@ const fs = require('fs');
 function getElectronApp() {
   try { return require('electron').app; } catch { return null; }
 }
+
 function getAppRoot() {
   const app = getElectronApp();
   if (app) return app.isPackaged ? process.resourcesPath : app.getAppPath();
   // fallback fora do Electron (útil em testes)
   return process.cwd();
 }
+
 function getUserData() {
   const app = getElectronApp();
   return app ? app.getPath('userData') : path.join(process.cwd(), '.userData');

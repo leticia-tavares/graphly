@@ -1,15 +1,19 @@
 document.addEventListener('DOMContentLoaded', async () => {
+  const imgGraph = document.getElementById('graph-img');
+  const imgLouvain = document.getElementById('louvain-img');
 
   const excludeSelect = document.getElementById('exclude-columns');
   const dataset = await window.electronAPI.loadDataset();
-  const filePath =  window.electronAPI.getPath('data/comunidades_pca_liminf_0.5000.csv'); // .csv with detceted communities
+
   const barsContainer = document.querySelector("#barras");
 
   // cards
   const totalNodesCard = document.getElementById('total-nodes');
   const totalEdgesCard = document.getElementById('total-edges');
   const avgDegreeCard = document.getElementById('avg-degree');
-  const lowerLimitCard = document.getElementById('lower-limit');
+  const communitiesQtyCard = document.getElementById('communities-qty');
+  const commSizeCard = document.getElementById('communities-sizes');
+  const modularityCard = document.getElementById('communities-mod');
 
   // Slider for cosine similarity weight
   const slider = document.getElementById('weight-slider');
@@ -23,14 +27,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const updateBtn = document.getElementById('update-dataset');
   const detectCommunityBtn = document.getElementById('detect-community');
   const exportBtn = document.getElementById('export-data');
+
+  const studies = ["original", "pca", "yj", "pca+yj"]; // Array to hold study options
   
-  
+  let study = 'pca'; // default study
   let cosSim = 0;    // stores the cossine similarity threshold
   let fullData = []; // Stores all the parsed data from the CSV
   let communitiesQty = 0; // Stores the number of communities detected
   let nodesPerCommunity = {}; // Stores nodes per community
   let originalColumns = []; // Original columns from the dataset
   let originalData = []; // Original data from the dataset
+  let graphOBJ = {}; // Graph object from Python
+  let louvainOBJ = {}; // Louvian object from Python
 
   // Check if dataset is loaded
   if (!dataset || !dataset.content) {
@@ -130,22 +138,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
 
-       // 1) Registra ouvintes primeiro
-    // window.pythonAPI.onPythonOutput((data) => {
-    //   console.log('Recebido do Python:', data);
-    //   // trate/parse aqui e atualize a UI
-    //   const jsonObj = JSON.parse(data);
-
-    //   const jsonGraph = JSON.parse(jsonObj.graph);
-    //   console.log('Graph JSON:', jsonGraph);
-    //   const jsonLouvian = JSON.parse(jsonObj.louvian);
-
-    //   totalNodesCard.textContent = jsonGraph.nodes || 'N/A';
-    //   totalEdgesCard.textContent = jsonGraph.edges || 'N/A';
-    //   avgDegreeCard.textContent = jsonGraph.degree || 'N/A';
-    //   // lowerLimitCard.textContent = jsonObj.limit || 'N/A';
-    // });
-
   // registre logs 1x (opcional)
   const offLogs = window.pythonAPI.onLog(({ ch, msg }) => {
     console[ch === 'stderr' ? 'error' : 'log']('[PY]', msg.trim());
@@ -153,15 +145,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   generateBtn.addEventListener('click', async () => {
 
-    const res = await window.pythonAPI.run('louvian.py', [cosSim, 1]);
+    study = document.querySelector('input[name="study"]:checked');
+    const res = await window.pythonAPI.run('louvain.py', [cosSim, study.value]);
     
     if (res.code !== 0) {
       console.error('Python falhou:', res.stderr);
       return;
     } 
     try {
+
+      imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
       const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
-      console.log('JSON do Python:', data);
+
+      graphOBJ = data.graph;  // <-- parse do objeto graph
+      louvainOBJ = data.louvain; // <-- parse do objeto louvian
+
+      totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
+      totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
+      avgDegreeCard.textContent = graphOBJ.degree || 'N/A';
+
     } catch (e) {
       console.error('Stdout não é JSON válido:', res.stdout, e);
     }
@@ -171,9 +173,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   detectCommunityBtn.addEventListener('click', async () => {
     console.log('Detecting communities...');
     let csv;
+
+    const filePath =  window.electronAPI.getPath(`data/communities_${studies[study.value]}.csv`); // .csv with detceted communities
+
     try {
       csv = await window.electronAPI.readFile(filePath);
       console.log('File read successfully');
+
+      communitiesQtyCard.textContent = louvainOBJ.communities || 'N/A';
+      commSizeCard.textContent = louvainOBJ.sizes || 'N/A';
+      modularityCard.textContent = (louvainOBJ.modularity).toFixed(3) || 'N/A';
+
+      imgLouvain.src = `../data/communities_${studies[study.value]}.png?${new Date().getTime()}`; // Força reload da imagem
 
     } catch (error){
       console.error('Error reading file:', error);
@@ -268,11 +279,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   }
 
-  function parseJson(content){
-    const data = JSON.parse(content);
-    console.log('Parsed JSON data:', data);
-    return data;
-  }
 
   function renderCommunityChart(){
     const categories = Array.from({length: communitiesQty}, (_, i) => `Comunidade ${i}`);

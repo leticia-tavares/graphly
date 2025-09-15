@@ -201,18 +201,6 @@ function showStatistics(columns, fileSize, metadata, rows) {
     const totalRows = rows.length;
     const totalColumns = columns.length;    
 
-    // Calculate the percentage of missing values for each column
-/*     const percentagesMissing = columns.map(col => {
-        const missing = metadata[col].missingValues;
-        const total = rows.length;
-        return ((missing / total) * 100).toFixed(2);
-    });
-    
-    const totalPercentMissing = percentagesMissing.reduce((acc, val) => acc + parseFloat(val), 0);
-
-    console.log('Percentuais de values ausentes:', percentagesMissing);
-    console.log('Total de values ausentes:', totalPercentMissing); */
-
      // Calculate the total number of missing values
     const totalMissing = columns.reduce((acc, col) => acc + metadata[col].missingValues, 0);
     

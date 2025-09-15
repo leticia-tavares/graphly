@@ -11,6 +11,8 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+from matplotlib.lines import Line2D
 
 from sklearn import metrics
 from sklearn.cluster import KMeans, SpectralClustering
@@ -112,7 +114,10 @@ def createGraph(base, study, cos_sim = 0.5):
     df_sim2.index = df_sim.index
 
     # salva a matriz de similaridade em csv
-    fname = f"data/sim_matrix_{studies[study]}_liminf_{lim_inf:.4f}.csv"
+    # fname = f"data/sim_matrix_{studies[study]}_liminf_{lim_inf:.4f}.csv"
+    fname = f"data/sim_matrix_{studies[study]}.csv"
+
+
     df_sim2.to_csv(fname, index=True)
     
     graph = nx.from_pandas_adjacency(df_sim2)  # constroi o grafo
@@ -143,15 +148,15 @@ def createGraph(base, study, cos_sim = 0.5):
         "degree": sum(dict(graph.degree).values()) / len(graph.nodes)
     }
 
-    similarityCG = nx.adjacency_matrix(gigante).todense()  # exporta a matriz de adjacencias do componente gigante
+    # similarityCG = nx.adjacency_matrix(gigante).todense()  # exporta a matriz de adjacencias do componente gigante
     
-    dfsimCG = pd.DataFrame(similarityCG)
-    dfsimCG.columns = [list(bairrosCG)]
-    dfsimCG.index = [list(bairrosCG)]
+    # dfsimCG = pd.DataFrame(similarityCG)
+    # dfsimCG.columns = [list(bairrosCG)]
+    # dfsimCG.index = [list(bairrosCG)]
     
-    return graph_info, gigante, lim_inf
+    return graph_info, gigante, graph
 
-def communityDetection(graph, study, lim_inf, save_csv=True, outdir='.'):
+def communityDetection(graph, study, save_csv=True):
     """
     Detecta comunidades (Louvain) e plota distribuição de tamanhos.
     """
@@ -191,7 +196,7 @@ def communityDetection(graph, study, lim_inf, save_csv=True, outdir='.'):
     dfparticao = pd.concat([dftemp.set_index('Bairro'), dfmetricas], axis=1)
 
     if save_csv:
-        fname = f"{outdir}/comunidades_{study}_liminf_{lim_inf:.4f}.csv"
+        fname = f"data/communities_{study}.csv"
         dfparticao.to_csv(fname, index=True)
 
     # Retorne também a figura, se quiser salvar PNG fora
@@ -253,7 +258,8 @@ def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_
     
     # plt.show()
 
-def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_em=None, dpi=150):
+def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, 
+                     salvar_em=None, dpi=150, particao=None, mostrar_legenda=True, cmap_base="tab20"):
     """
     Plota um grafo de forma simples e legível e opcionalmente salva como imagem.
     
@@ -275,22 +281,38 @@ def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, s
         g_vals += 1.0
     tamanhos = 300 * (g_vals / g_vals.max()) + 50
 
-    # Espessura da aresta via peso
+    # # Espessura da aresta via peso
     if usar_peso:
         w = np.array([G[u][v].get('weight',1.0) for u,v in G.edges()], dtype=float)
         if w.max() == 0:
             w += 1.0
         widths = 2.0 * (w / w.max())
     else:
-        widths = 1.0
+          widths = 1.0
+
+    # widths = 1.0
+
+     # --- Cores por comunidade ---
+    if particao is not None:
+        # comunidades distintas e mapeamento para 0..k-1
+        com_ids = sorted(set(particao.values()))
+        k = len(com_ids)
+        id2idx = {cid: i for i, cid in enumerate(com_ids)}
+        
+        # colormap com k cores bem separadas
+        cmap = mpl.colormaps[cmap_base].resampled(k)
+        # vetor de cores na ordem de G.nodes()
+        node_colors = [cmap(id2idx[particao[n]]) for n in G.nodes()]
+    else:
+        node_colors = 'skyblue'
 
     # Plot
-    fig, ax = plt.subplots(figsize=(9,7))
-    nx.draw_networkx_edges(G, pos, width=widths, alpha=0.25, ax=ax)
+    fig, ax = plt.subplots(figsize=(9, 7))
+    nx.draw_networkx_edges(G, pos, width=widths, alpha=0.25, ax=ax, edge_color="#999999")
     nx.draw_networkx_nodes(
         G, pos,
         node_size=tamanhos,
-        node_color='skyblue',
+        node_color=node_colors,
         edgecolors='k',
         linewidths=0.5,
         ax=ax
@@ -299,6 +321,20 @@ def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, s
     if rotulos:
         nx.draw_networkx_labels(G, pos, font_size=8, ax=ax)
 
+    # Legenda (uma entrada por comunidade)
+    if particao is not None and mostrar_legenda:
+        # monta contagem por comunidade
+        from collections import Counter
+        contagem = Counter(particao.values())
+        handles = []
+        labels = []
+        for cid in com_ids:
+            color = mpl.colormaps[cmap_base].resampled(k)(id2idx[cid])
+            handles.append(Line2D([0], [0], marker='o', linestyle='',
+                                  markerfacecolor=color, markeredgecolor='k', markersize=8))
+            labels.append(f"Comunidade {cid} (n={contagem[cid]})")
+        ax.legend(handles, labels, loc='best', fontsize=8, frameon=True)
+
     ax.set_title(titulo)
     ax.axis('off')
     plt.tight_layout()
@@ -306,9 +342,8 @@ def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, s
     # Salvar se solicitado
     if salvar_em:
         plt.savefig(salvar_em, dpi=dpi, bbox_inches='tight')
-        print(f"✅ Gráfico salvo em: {salvar_em}")
 
-    plt.show()
+    # plt.show()
 
 
 
@@ -333,13 +368,14 @@ def main():
     bases = [df, df_pca, df_yj, df_pcayj] 
 
     #  constroi o grafo 
-    res, gigante, lim_inf = createGraph(bases[study], study, cos_sim) 
+    res, gigante, graph = createGraph(bases[study], study, cos_sim) 
 
     # graph data to json
     json_graph = json.dumps(res)
 
     #  Chamada da função passando lim_inf
-    df_communities, communities, res = communityDetection(gigante, studies[study], lim_inf, outdir='data')
+    df_communities, communities, res = communityDetection(gigante, studies[study])
+    plot_communities(gigante, titulo=f"Communities - {studies[study]}", particao=communities ,rotulos=True, salvar_em=f"data/communities_{studies[study]}.png")
 
     # louvian data to json 
     json_louvian = json.dumps(res)
@@ -360,17 +396,17 @@ def main():
             "degree": degree,
         },
         "louvain": {  
-            "qtd_communities": qtd_communities,
-            "sizes": sizes,       # garanta tipos serializáveis
+            "communities": qtd_communities,
+            "sizes": sizes,       
             "modularity": modularity,
         }
     }
+    
+    # with open(f"data/communities_{studies[study]}.json", "w") as file:     
+    #     json.dump(communities, file, indent=4)
 
     # ÚNICA saída no stdout:
     print(json.dumps(result, ensure_ascii=False), flush=True)
-
-    with open(f"data/communities_{studies[study]}.json", "w") as file:     
-        json.dump(communities, file, indent=4)
 
 
 if __name__ == "__main__":

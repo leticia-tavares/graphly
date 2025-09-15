@@ -5,72 +5,13 @@
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
-
-// python integration
-// const spawn = require('child_process');
-// const { spawnSync, spawn } = require('child_process');
-// let pythonProcess;
-// let PYTHON_BIN;
-
 const py = require('./bootstrap-python');
-let PYTHON_BIN;
-
 
 // ----- Global Variables -----
+let PYTHON_BIN;
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
-/* 
-function findSystemPython() {
-  const candidates = process.platform === 'win32'
-    ? [['py', ['-3', '--version']], ['python', ['--version']]]
-    : [['python3', ['--version']], ['python', ['--version']]];
 
-  for (const [cmd, args] of candidates) {
-    const r = spawnSync(cmd, args, { encoding: 'utf8' });
-    if (r.status === 0 && /Python 3\.(1\d|[0-9])/.test(r.stdout + r.stderr)) {
-      return cmd; // ok (3.x)
-    }
-  }
-  throw new Error('Python 3 não encontrado no sistema.');
-}
-
-
-function venvPaths(venvDir) {
-  const isWin = process.platform === 'win32';
-  return {
-    python: isWin ? path.join(venvDir, 'Scripts', 'python.exe')
-                  : path.join(venvDir, 'bin', 'python'),
-  };
-}
-
-function ensurePythonEnv() {
-  const userData = app.getPath('userData');
-  const venvDir = path.join(userData, 'pyenv');
-  const reqFile = path.join(process.resourcesPath || process.cwd(), "graphly_requirements.txt");
-
-  // 1) cria venv se não existir
-  if (!fs.existsSync(path.join(venvDir, process.platform === 'win32' ? 'Scripts' : 'bin'))) {
-    const py = findSystemPython();
-    const r = spawnSync(py, ['-m', 'venv', venvDir], { stdio: 'inherit' });
-    if (r.status !== 0) throw new Error('Falha ao criar venv.');
-  }
-
-  // 2) atualiza pip/setuptools/wheel
-  const { pip } = venvPaths(venvDir);
-  let r = spawnSync(pip, ['install', '--upgrade', 'pip', 'setuptools', 'wheel'], { stdio: 'inherit' });
-  if (r.status !== 0) throw new Error('Falha atualizando pip.');
-
-  // 3) instala/atualiza requirements
-  if (fs.existsSync(reqFile)) {
-    r = spawnSync(pip, ['install', '--upgrade', '-r', reqFile], { stdio: 'inherit' });
-    if (r.status !== 0) throw new Error('Falha instalando requirements.');
-  } else {
-    console.warn('requirements não encontrado em', reqFile);
-  }
-
-  return venvPaths(venvDir).python;
-}
- */
 
 // Resolve caminho do script na pasta python/ (dev vs empacotado)
 function resolvePy(relScript) {
@@ -245,54 +186,6 @@ function createWindow(){
     });
 };
 
-ipcMain.handle('python-init', (event, value) => {
-
-  const scriptPath = path.join(__dirname, 'scripts/test.py'); // ajuste o nome/caminho
-
-  pythonProcess = spawn.spawn('python', ['-u', scriptPath, value], {
-    env: { ...process.env, PYTHONUNBUFFERED: '1' }, // redundante mas ajuda
-    cwd: __dirname
-  });
-  
-  //pythonProcess = spawn.spawn('python', ['scripts/test.py']);
-
-  pythonProcess.stdout.on('data', (data) => {
-    const output = data.toString();
-    // console.log(`\nPython Output: ${output}`);
-    event.sender.send('python-output', output);
-  });
-
-  pythonProcess.stderr.on('data', (data) => {
-    const err = data.toString();
-    console.error('Python Error:', err);
-    event.sender.send('python-error', err);
-  });
-
-  pythonProcess.on('close', (code, signal) => {
-    const msg = `Processo finalizado. code=${code} signal=${signal || 'none'}`;
-    console.log(msg);
-    event.sender.send('python-exit', { code, signal });
-  });
-  return 'Python iniciado!';
-});
-
-ipcMain.handle('python-send', (data) => {
-  data = data.toString() + '\n'; // garante que é string e termina com nova linha
-  if (pythonProcess) {
-    pythonProcess.stdin.write(data);
-    return 'Mensagem enviada para o Python.';
-  }
-});
-
-
-ipcMain.handle('python-end', () => {
-  if (pythonProcess && !pythonProcess.killed) {
-    pythonProcess.kill(); // geralmente SIGTERM
-  }
-  return 'Python encerrado!';
-
-});
-
 
 // Handle navigation request from the Renderer process
 ipcMain.on('navigate', (event, page) => {
@@ -419,28 +312,7 @@ ipcMain.handle('python:run', async (event, relScript, args = []) => {
 });
 
 
-
 // Application ready event
-/* app.whenReady().then(() => {
-
-  try {
-    PYTHON_BIN = ensurePythonEnv();
-    createWindow();
-
-    app.on('activate', () => {
-    //recreates the mainWindow if all windows were closed (macOS)
-    if(BrowserWindow.getAllWindows().length === 0){
-        createWindow();
-    }
-    });
-  } catch (err) {
-    console.error('[Graphly] Falha ao preparar Python:', err);
-    dialog.showErrorBox('Erro ao preparar ambiente Python', String(err));
-  }
-  }).catch(err => {
-    console.error('[Graphly] Erro no whenReady:', err);
-});
- */
 app.whenReady().then(async () => {
   try {
     const { pythonBin } = await py.prepare({
@@ -460,9 +332,25 @@ app.whenReady().then(async () => {
   }
 });
 
+// Cleanup data directory on exit
+app.on('before-quit', () => {
+
+    if (process.platform !== 'darwin') {
+      try {
+        // força e recursivo; não lança erro se já não existir
+        fs.rmSync(path.join(__dirname, 'data'), { recursive: true, force: true });
+        console.log('Data directory removed successfully.');
+      } catch (err) {
+        console.error('Error removing data directory:', err);
+      }
+  }
+});
+
+
 // Closes the application when all windows are closed as well 
 app.on('windows-all-closed', () => {
-    if(process.platform !== 'darwin'){
-        app.quit();
-    }
+
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });

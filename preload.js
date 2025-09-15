@@ -47,13 +47,6 @@ const api = {
   detect: (params) => ipcRenderer.invoke('python:detect', params),
   onLog: (cb) => ipcRenderer.on('python:log', (event, data) => cb?.(data)),
 
-  pyReceive: (value) => ipcRenderer.invoke('python-init', value),
-  pySend: (data) => ipcRenderer.invoke('python-send', data),
-  pyEnd: () => ipcRenderer.invoke('python-end'),
-  onPythonOutput: (cb) => ipcRenderer.on('python-output', (event, data) => cb(data)),
-  onPythonError: (cb) => ipcRenderer.on('python-error', (event, data) => cb(data)),
-  onPythonExit: (cb) => ipcRenderer.on('python-exit', (event, data) => cb(data)),
-
 };
 
 contextBridge.exposeInMainWorld('pythonAPI', api); 

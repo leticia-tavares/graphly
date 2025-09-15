@@ -50,7 +50,7 @@
           </form>
 
           <div class="range-input">
-            <h3>Choose Cosine Similarity</h3>
+            <h3>Select Cosine Similarity</h3>
             <br>
             <div class="slider-wrapper">
               <input type="range" id="weight-slider" min="0" max="1" step="0.01" value="0.5">
@@ -63,13 +63,41 @@
             <p>Nodes are created when the similarity is greater or equal to the threshold</p>
         </div>
 
+        <div class="input-study">
+          <form>
+            <h3>Select Study</h3>
+            <br>
+            <div class="radio-buttons">
+            <label>
+              <input type="radio" name="study" value="0" checked> 
+              Original Data
+            </label><br>
+
+            <label>
+              <input type="radio" name="study" value="1">
+              PCA
+            </label><br>
+
+            <label>
+              <input type="radio" name="study" value="2">
+              Yeo-Jhonson
+            </label><br>
+
+            <label>
+              <input type="radio" name="study" value="3">
+              Yeo-Jhonson + PCA
+            </label>
+            </div>
+          </form>
+        </div>
+        <br>
+
         <button id="generate-graph" type="submit" class="btn-primary">Generate Graph</button>
 
       </section>
 
-      <section class="section">
-        
         <section class="section">
+
           <h2>📊Graph Information</h2>
 
           <div id="cards" class="card-container">
@@ -87,19 +115,15 @@
               <h3>Average Degree</h3>
               <p id="avg-degree"></p>
             </div>
-
-            <!-- <div class="data-card">
-              <h3>Lower Limit</h3>
-              <p id="lower-limit"></p>
-            </div> -->
           </div>
 
-        </section> 
-
-        <section class="section">
+        <!-- </section>  -->
+         <section class="section">
           <div class="img-display">
             <h2>🔍Generated Graph</h2>
-            <img src="../data/grafo.png"  alt="Your generated graph">
+            <!-- <img id="graph-img" src="../data/grafo.png"  alt="Your generated graph"> -->
+            <img id="graph-img"  alt="Your generated graph">
+
           </div>
           <button id="detect-community" class="btn-primary">Run Community Detection</button>
         </section>
@@ -107,13 +131,40 @@
 
       <section class="section">
         <h2>🧩Community Detection</h2>
+
+          <div id="cards" class="card-container">
+            <div class="data-card">
+              <h3>Communities</h3>
+              <p id="communities-qty"></p>
+            </div>
+
+            <div class="data-card">
+              <h3>Sizes</h3>
+              <p id="communities-sizes"></p>
+            </div>
+
+            <div class="data-card">
+              <h3>Modularity</h3>
+              <p id="communities-mod"></p>
+            </div>
+          </div>
+
         <!-- comunidades, tamanho e modularidade -->
-        <div id="community-display" class="chart"></div>
+
+        <section class="section">
+          <div class="img-display">
+            <h2>🔍Communities</h2>
+    
+            <img id="louvain-img"  alt="The detected communities within the graph">
+
+          </div>
+
+        </section>
+ 
         <div class="charts-output-area">
           <div id="barras" class="chart"></div>
         </div>
-        <!-- <button id="detect-community" class="btn-primary">Run</button> -->
-        <!-- Placeholder button for future export functionality -->
+
         <button id="export-data" class="btn-secondary">Export Graph &amp; Community Data</button>
       </section>
   </main>
