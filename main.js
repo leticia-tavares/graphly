@@ -400,16 +400,9 @@ ipcMain.handle('export-file', async (event, relativeName) => {
   }
 });
 
-// Canal para executar script
-/* ipcMain.handle('python:run', async (_evt, scriptPath, args=[]) => {
-  if (!PYTHON_BIN) throw new Error('Python não inicializado.');
-  return py.runWithAutoDeps(PYTHON_BIN, scriptPath, args);
-});
- */
-
 
 // IPC — roda um script Python e devolve {code, stdout, stderr}
-ipcMain.handle('python:run', async (evt, relScript, args = []) => {
+ipcMain.handle('python:run', async (event, relScript, args = []) => {
   if (!PYTHON_BIN) throw new Error('Python não inicializado.');
   const script = resolvePy(relScript);
 
@@ -418,9 +411,10 @@ ipcMain.handle('python:run', async (evt, relScript, args = []) => {
     onData: (ch, msg) => {
       if (ch === 'stdout') out += msg; else err += msg;
       // log streaming opcional para o renderer:
-      evt.sender.send('python:log', { ch, msg });
+      event.sender.send('python:log', { ch, msg });
     }
   });
+
   return { code, stdout: out, stderr: err };
 });
 

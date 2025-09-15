@@ -45,7 +45,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 const api = {
   run: (scriptPath, args=[]) => ipcRenderer.invoke('python:run', scriptPath, args),
   detect: (params) => ipcRenderer.invoke('python:detect', params),
-  onLog: (cb) => ipcRenderer.on('python:log', (_ev, data) => cb?.(data)),
+  onLog: (cb) => ipcRenderer.on('python:log', (event, data) => cb?.(data)),
 
   pyReceive: (value) => ipcRenderer.invoke('python-init', value),
   pySend: (data) => ipcRenderer.invoke('python-send', data),

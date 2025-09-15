@@ -22,12 +22,12 @@ from sklearn.preprocessing import PowerTransformer
 
 from community import community_louvain
 
+
 df = pd.read_csv('data/original_dataset.csv', index_col=0)
 
 neighborhoods = df.shape[0] # number of neighborhoods
 num_of_var = df.shape[1] # total number of variables
 studies = ['original', 'pca', 'yj', 'pca+yj']
-
 
 
 def applyPCA(data, num_of_comp, var):
@@ -62,17 +62,6 @@ def applyPCA(data, num_of_comp, var):
     df_pca = pd.DataFrame(temp_pca[:,0:qtd_final])
     df_pca.index = data.index
     df_pca.columns = [pca_var]
-
-    # print("Quantidade final: ", qtd_final)
-    # print("Total explicado: ", total_explicado)
-    # print("Componentes: ", pca.explained_variance_ratio_)
-
-    # plot da variancia explicada por componente
-    """     features = range(pca.n_components_)
-    plt.bar(features, pca.explained_variance_ratio_, color='black')
-    plt.xlabel('Componentes do PCA')
-    plt.ylabel('Variancia explicada %')
-    plt.xticks(features) """
     
     return df_pca
 
@@ -99,7 +88,6 @@ def powerTransformer(data):
 def createGraph(base, study, cos_sim = 0.5):
     
     # pega a base de estudo a ser utilizada
-    # base = bases[study] 
     similarity = cosine_similarity(base, base)  # encontra similaridade global
     
     df_sim = pd.DataFrame(similarity)
@@ -160,12 +148,10 @@ def createGraph(base, study, cos_sim = 0.5):
     dfsimCG = pd.DataFrame(similarityCG)
     dfsimCG.columns = [list(bairrosCG)]
     dfsimCG.index = [list(bairrosCG)]
-
-    num_bairrosCG = len(bairrosCG)
     
-    return graph_info, num_bairrosCG, gigante, lim_inf
+    return graph_info, gigante, lim_inf
 
-def communityDetection(graph, neighborhoods, study, lim_inf, show=True, save_csv=True, outdir='.'):
+def communityDetection(graph, study, lim_inf, save_csv=True, outdir='.'):
     """
     Detecta comunidades (Louvain) e plota distribuição de tamanhos.
     """
@@ -201,26 +187,15 @@ def communityDetection(graph, neighborhoods, study, lim_inf, show=True, save_csv
         "modularity": community_louvain.modularity(particao, graph, weight='weight'),
     }
 
-    # --- Plot: crie figura nova e dê show() ---
-    fig, ax = plt.subplots(figsize=(6,4))
-    ax.bar(range(qtdcomunidades), qtdelementos)
-    ax.set_title(f'Comunidades ({study})')
-    ax.set_xlabel('Comunidade')
-    ax.set_ylabel('Número de nós')
-    ax.grid(True, axis='y', alpha=0.3)
-    fig.tight_layout()
-
-    if show:
-        plt.show()
-
     # --- Saída (CSV) ---
     dfparticao = pd.concat([dftemp.set_index('Bairro'), dfmetricas], axis=1)
+
     if save_csv:
         fname = f"{outdir}/comunidades_{study}_liminf_{lim_inf:.4f}.csv"
         dfparticao.to_csv(fname, index=True)
 
     # Retorne também a figura, se quiser salvar PNG fora
-    return dfparticao, fig, particao, json_louvain
+    return dfparticao, particao, json_louvain
 
 def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_em=None, dpi=150):
     """
@@ -339,8 +314,9 @@ def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, s
 
 def main():
     cos_sim = 0.5 # default
+    study = 0     # default
+
     studies = ['original', 'pca', 'yj', 'pca+yj']
-    study = 0       # default
 
     if(len(sys.argv)) >= 2:
         message = sys.argv[1]
@@ -357,27 +333,45 @@ def main():
     bases = [df, df_pca, df_yj, df_pcayj] 
 
     #  constroi o grafo 
-    res, num_bairrosCG, gigante, lim_inf = createGraph(bases[study], study, cos_sim) 
+    res, gigante, lim_inf = createGraph(bases[study], study, cos_sim) 
 
-    # cria o json para enviar para o node
+    # graph data to json
     json_graph = json.dumps(res)
-    print(json_graph) 
-
-    sys.stdout.flush()
 
     #  Chamada da função passando lim_inf
-    df_communities, fig, communities, res = communityDetection(gigante, num_bairrosCG, studies[study], lim_inf, show=False, outdir='data')
+    df_communities, communities, res = communityDetection(gigante, studies[study], lim_inf, outdir='data')
 
-    json_communities = json.dumps(res)
-    print(json_communities)
+    # louvian data to json 
+    json_louvian = json.dumps(res)
 
+    nodes = json.loads(json_graph)["nodes"]
+    edges = json.loads(json_graph)["edges"] 
+    degree = json.loads(json_graph)["degree"]
+
+    qtd_communities = json.loads(json_louvian)["qtd_communities"]
+    sizes = json.loads(json_louvian)["sizes"]
+    modularity = json.loads(json_louvian)["modularity"]
+
+    # Monta o resultado final
+    result = {
+        "graph": {
+            "nodes": nodes,
+            "edges": edges,
+            "degree": degree,
+        },
+        "louvain": {  
+            "qtd_communities": qtd_communities,
+            "sizes": sizes,       # garanta tipos serializáveis
+            "modularity": modularity,
+        }
+    }
+
+    # ÚNICA saída no stdout:
+    print(json.dumps(result, ensure_ascii=False), flush=True)
 
     with open(f"data/communities_{studies[study]}.json", "w") as file:     
         json.dump(communities, file, indent=4)
 
-
-    # salvar PNG do gráfico de barras
-    # fig.savefig(f"comunidades_{studies[study]}_liminf_{lim_inf:.4f}.png", dpi=150)
 
 if __name__ == "__main__":
     main()

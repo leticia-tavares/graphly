@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const excludeSelect = document.getElementById('exclude-columns');
   const dataset = await window.electronAPI.loadDataset();
-  const filePath =  window.electronAPI.getPath('data-temp/comunidades.csv'); // .csv with detceted communities
+  const filePath =  window.electronAPI.getPath('data/comunidades_pca_liminf_0.5000.csv'); // .csv with detceted communities
   const barsContainer = document.querySelector("#barras");
 
   // cards
@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Slider for cosine similarity weight
   const slider = document.getElementById('weight-slider');
   const weightValue = document.getElementById('weight-value');
+  weightValue.textContent = slider.value; // Inicializa com o valor do slider
+
 
   let selectedItems = []; // Array para gerenciar os itens selecionados
 
@@ -22,7 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const detectCommunityBtn = document.getElementById('detect-community');
   const exportBtn = document.getElementById('export-data');
   
-  weightValue.textContent = slider.value; // Inicializa com o valor do slider
   
   let cosSim = 0;    // stores the cossine similarity threshold
   let fullData = []; // Stores all the parsed data from the CSV
@@ -128,36 +129,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     cosSim = slider.value;
   });
 
+
+       // 1) Registra ouvintes primeiro
+    // window.pythonAPI.onPythonOutput((data) => {
+    //   console.log('Recebido do Python:', data);
+    //   // trate/parse aqui e atualize a UI
+    //   const jsonObj = JSON.parse(data);
+
+    //   const jsonGraph = JSON.parse(jsonObj.graph);
+    //   console.log('Graph JSON:', jsonGraph);
+    //   const jsonLouvian = JSON.parse(jsonObj.louvian);
+
+    //   totalNodesCard.textContent = jsonGraph.nodes || 'N/A';
+    //   totalEdgesCard.textContent = jsonGraph.edges || 'N/A';
+    //   avgDegreeCard.textContent = jsonGraph.degree || 'N/A';
+    //   // lowerLimitCard.textContent = jsonObj.limit || 'N/A';
+    // });
+
+  // registre logs 1x (opcional)
+  const offLogs = window.pythonAPI.onLog(({ ch, msg }) => {
+    console[ch === 'stderr' ? 'error' : 'log']('[PY]', msg.trim());
+  });
+
   generateBtn.addEventListener('click', async () => {
-/*      // 1) Registra ouvintes primeiro
-    window.electronAPI.onPythonOutput((data) => {
-      console.log('Recebido do Python:', data);
-      // trate/parse aqui e atualize a UI
-      const jsonObj = JSON.parse(data);
 
-      totalNodesCard.textContent = jsonObj.nodes || 'N/A';
-      totalEdgesCard.textContent = jsonObj.edges || 'N/A';
-      avgDegreeCard.textContent = jsonObj.degree || 'N/A';
-      lowerLimitCard.textContent = jsonObj.limit || 'N/A';
-    });
+    const res = await window.pythonAPI.run('louvian.py', [cosSim, 1]);
+    
+    if (res.code !== 0) {
+      console.error('Python falhou:', res.stderr);
+      return;
+    } 
+    try {
+      const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
+      console.log('JSON do Python:', data);
+    } catch (e) {
+      console.error('Stdout não é JSON válido:', res.stdout, e);
+    }
 
-    window.electronAPI.onPythonError((err) => {
-      console.error('Erro do Python:', err);
-    });
-
-    window.electronAPI.onPythonExit(({ code, signal }) => {
-      console.log(`Python finalizado: code=${code} signal=${signal || 'none'}`);
-    });
-
-    // 2) Só então inicia
-    const result = await window.electronAPI.pyReceive(cosSim);
-    console.log(result); // "Python iniciado!" */
-
-    const code = await window.pythonAPI.run('test.py', ['--foo', 'bar']);
-    console.log('Python saiu com código:', code);
-
-    // const sendResult = await window.electronAPI.pySend(cosSim);
-    // console.log(sendResult); // "Mensagem enviada para o Python."
   });
 
   detectCommunityBtn.addEventListener('click', async () => {
@@ -258,6 +266,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           alert('Error processing the CSV file. Please check the file format.');
       }
   });
+  }
+
+  function parseJson(content){
+    const data = JSON.parse(content);
+    console.log('Parsed JSON data:', data);
+    return data;
   }
 
   function renderCommunityChart(){
