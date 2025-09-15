@@ -13,14 +13,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getPath: (relative) => ipcRenderer.invoke('get-path', relative),
   writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
-  exportFile: (fileName) => ipcRenderer.invoke('export-file', fileName),
+  exportData: () => ipcRenderer.invoke('export-data'),
 
   // path methodss
   getPath: (name) => path.join(__dirname, name),
 
   // fs methods
   readText: async (path) => fs.promises.readFile(path, 'utf8'),
-
   readFile: (path) => fs.readFileSync(path, 'utf8'),  // síncrono
   readFileAsync: (path) => fs.promises.readFile(path, 'utf8'), // assíncrono
 
@@ -33,7 +32,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   //theme
   setTheme: (theme) => ipcRenderer.send('set-theme', theme),
 
-  // diallgs messages
+  // dialogs messages
   showDialog: (message) => ipcRenderer.invoke('show-dialog', message),
 
   // data set
@@ -46,7 +45,6 @@ const api = {
   run: (scriptPath, args=[]) => ipcRenderer.invoke('python:run', scriptPath, args),
   detect: (params) => ipcRenderer.invoke('python:detect', params),
   onLog: (cb) => ipcRenderer.on('python:log', (event, data) => cb?.(data)),
-
 };
 
 contextBridge.exposeInMainWorld('pythonAPI', api); 

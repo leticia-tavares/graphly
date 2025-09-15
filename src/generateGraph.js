@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dataset = await window.electronAPI.loadDataset();
 
   const barsContainer = document.querySelector("#barras");
+  let barsChartInstance;
 
   // cards
   const totalNodesCard = document.getElementById('total-nodes');
@@ -162,7 +163,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
       totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
-      avgDegreeCard.textContent = graphOBJ.degree || 'N/A';
+      avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
 
     } catch (e) {
       console.error('Stdout não é JSON válido:', res.stdout, e);
@@ -173,6 +174,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   detectCommunityBtn.addEventListener('click', async () => {
     console.log('Detecting communities...');
     let csv;
+    destroyCharts(); // Destroi gráficos anteriores, se existirem
+
+    if (!graphOBJ || !graphOBJ.nodes) {
+      alert('Please generate the graph first.');
+      return;
+    }
 
     const filePath =  window.electronAPI.getPath(`data/communities_${studies[study.value]}.csv`); // .csv with detceted communities
 
@@ -186,22 +193,32 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       imgLouvain.src = `../data/communities_${studies[study.value]}.png?${new Date().getTime()}`; // Força reload da imagem
 
+      parseCSV(csv);
+      renderCommunityChart(fullData);
+
     } catch (error){
       console.error('Error reading file:', error);
       return;
     }
 
-    parseCSV(csv);
-    renderCommunityChart(fullData);
   });
 
   exportBtn.addEventListener('click', async () => {
-    const result = await window.electronAPI.exportFile("filtered_dataset.csv");
+    
+    // const result = await window.electronAPI.exportFile("filtered_dataset.csv");
+    const result = await window.electronAPI.exportData();
 
     if (result.canceled) {
-      console.log('Export canceled by user.');
-      alert("Export canceled by the user.");
+      alert('Exportação cancelada pelo usuário.');
+      return;
     }
+    
+    if (result.error) {
+      alert('Erro: ' + result.error);
+      return;
+    }
+
+    alert('Todos os arquivos foram exportados com sucesso!');
   });
 
   async function createCSVFile(data, path){
@@ -300,5 +317,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   barsChartInstance.render();
   }
 
+  /**
+   * @brief Destroy all chart instances and clear their containers.
+   */
+  function destroyCharts() {
+        if (barsChartInstance) barsChartInstance.destroy();
+        barsContainer.innerHTML = "";
+  }
+
 });
+
+
 

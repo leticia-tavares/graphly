@@ -260,36 +260,41 @@ ipcMain.handle('write-file', async (_e, { filePath, content }) => {
   return true;
 });
 
-ipcMain.handle('export-file', async (event, relativeName) => {
-  // Caminho absoluto do arquivo dentro do projeto
-  const sourcePath = path.join(__dirname, 'data', relativeName);
-  
-  const { canceled, filePath } = await dialog.showSaveDialog({
-    title: 'Save CSV file',
-    defaultPath: relativeName,
-    filters: [
-      { name: 'CSV Files', extensions: ['csv'] },
-      { name: 'All Files', extensions: ['*'] }
-    ]
-  });
-
-  
-  if (canceled || filePath.length === 0) {
-    console.log('User canceled the save dialog.');
-    return { canceled: true };
-  }
-
-  // Copia o arquivo
+// Exports all files from /data to a user-selected directory
+ipcMain.handle('export-data', async () => {
   try {
-    await fs.promises.copyFile(sourcePath, filePath);
-    console.log(`Arquivo exportado para: ${filePath}`);
-    return { canceled: false, filePath };
+    const srcDir = path.join(__dirname, 'data');
 
+    // lista todos os arquivos dentro de /data
+    const files = fs.readdirSync(srcDir);
+
+    if (!files.length) {
+      return { canceled: false, error: 'Nenhum arquivo encontrado no diretório /data.' };
+    }
+
+    // pede para o usuário escolher a pasta de destino
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: 'Escolha a pasta de destino',
+      properties: ['openDirectory', 'createDirectory']
+    });
+    if (canceled) return { canceled: true };
+
+    const destDir = filePaths[0];
+    const results = [];
+
+    for (const filename of files) {
+      const src  = path.join(srcDir, filename);
+      const dest = path.join(destDir, filename);
+
+      // copia cada arquivo
+      fs.copyFileSync(src, dest);
+      results.push({ file: filename, ok: true });
+    }
+
+    return { canceled: false, results };
   } catch (err) {
-    console.error('Erro ao exportar arquivo:', err);
-    dialog.showErrorBox('Erro ao exportar', err.message);
-    
-    return { canceled: true, error: err.message };
+    console.error('Export error:', err);
+    return { canceled: false, error: err.message };
   }
 });
 
