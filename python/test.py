@@ -1,6 +1,10 @@
 import sys
 import json
 # para testar se o python está funcionando
+
+# $py = "$env:APPDATA\graphly\pyenv\Scripts\python.exe"
+# Test-Path $py
+
 # & $py .\python\test.py 
 
 import pandas as pd
@@ -18,21 +22,13 @@ from sklearn.preprocessing import PowerTransformer
 
 from community import community_louvain
 
-
-cos_sim = 0.5 # default
-
-if(len(sys.argv)) >= 2:
-    message = sys.argv[1]
-    cos_sim = float(message)
-
 df = pd.read_csv('data/original_dataset.csv', index_col=0)
-# print(df.head())
 
 neighborhoods = df.shape[0] # number of neighborhoods
-# print(neighborhoods)
-
 num_of_var = df.shape[1] # total number of variables
-# print(num_of_var)
+studies = ['original', 'pca', 'yj', 'pca+yj']
+
+
 
 def applyPCA(data, num_of_comp, var):
     """
@@ -67,9 +63,9 @@ def applyPCA(data, num_of_comp, var):
     df_pca.index = data.index
     df_pca.columns = [pca_var]
 
-    print("Quantidade final: ", qtd_final)
-    print("Total explicado: ", total_explicado)
-    print("Componentes: ", pca.explained_variance_ratio_)
+    # print("Quantidade final: ", qtd_final)
+    # print("Total explicado: ", total_explicado)
+    # print("Componentes: ", pca.explained_variance_ratio_)
 
     # plot da variancia explicada por componente
     """     features = range(pca.n_components_)
@@ -100,6 +96,75 @@ def powerTransformer(data):
     df_pt.index = data.index
     return df_pt
 
+def createGraph(base, study, cos_sim = 0.5):
+    
+    # pega a base de estudo a ser utilizada
+    # base = bases[study] 
+    similarity = cosine_similarity(base, base)  # encontra similaridade global
+    
+    df_sim = pd.DataFrame(similarity)
+    df_sim.columns = base.index
+    df_sim.index = base.index
+    
+    sim_values = similarity[np.triu_indices(neighborhoods, k = 1)] #lista de valores de similaridade
+    
+    for i in range(neighborhoods):
+        similarity[i,i] = 0  # elimina futuras autoarestas
+    
+    # corte das arestas baseado na estatistica descritiva
+    # lim_inf = pd.DataFrame(sim_values).describe().transpose()['75%'][0]  # limite inferior dos pesos das arestas
+    lim_inf = cos_sim
+
+    # usa a similaridade passada como parametro
+    similarity2 = np.where(similarity < lim_inf, 0, similarity)  # anula similaridades abaixo do limite
+    adjacencias = np.where(similarity < lim_inf, 0, 1)           # cria matriz binaria de adjacencias 
+    
+    df_sim2 = pd.DataFrame(similarity2) # matriz de referencia para construcao do grafo
+    df_sim2.columns = df_sim.index
+    df_sim2.index = df_sim.index
+
+    # salva a matriz de similaridade em csv
+    fname = f"data/sim_matrix_{studies[study]}_liminf_{lim_inf:.4f}.csv"
+    df_sim2.to_csv(fname, index=True)
+    
+    graph = nx.from_pandas_adjacency(df_sim2)  # constroi o grafo
+
+    # garante que o grafo esteja conectado (pega o maior componente conectado)
+    if not nx.is_connected(graph):
+        graph = max((graph.subgraph(c).copy() for c in nx.connected_components(graph)), key=len)
+    
+    # Nome do arquivo baseado no estudo
+    # arquivo_saida = f"data/grafo_{studies[study]}.png"
+    graph_img = f"data/grafo.png"
+
+    # Plotar e salvar
+    plot_grafo(
+        graph,
+        titulo=f"Network - {studies[study]}",
+        usar_peso=True,
+        rotulos=True,
+        salvar_em=graph_img
+    )
+    
+    bairrosCG = sorted(max(nx.connected_components(graph), key = len))  # bairros do componente gigante
+    gigante = graph.subgraph(bairrosCG)  # cria subgrafo com esses bairros
+
+    graph_info = {
+        "nodes": len(graph.nodes),
+        "edges": len(graph.edges),
+        "degree": sum(dict(graph.degree).values()) / len(graph.nodes)
+    }
+
+    similarityCG = nx.adjacency_matrix(gigante).todense()  # exporta a matriz de adjacencias do componente gigante
+    
+    dfsimCG = pd.DataFrame(similarityCG)
+    dfsimCG.columns = [list(bairrosCG)]
+    dfsimCG.index = [list(bairrosCG)]
+
+    num_bairrosCG = len(bairrosCG)
+    
+    return graph_info, num_bairrosCG, gigante, lim_inf
+
 def communityDetection(graph, neighborhoods, study, lim_inf, show=True, save_csv=True, outdir='.'):
     """
     Detecta comunidades (Louvain) e plota distribuição de tamanhos.
@@ -129,9 +194,12 @@ def communityDetection(graph, neighborhoods, study, lim_inf, show=True, save_csv
 
     qtdcomunidades = int(dftemp['Comunidade'].max()) + 1
     qtdelementos = [list(particao.values()).count(x) for x in range(qtdcomunidades)]
-
-    print(f"{qtdcomunidades} comunidades; tamanhos: {qtdelementos}; "
-          f"modularidade = {community_louvain.modularity(particao, graph, weight='weight'):.4f}")
+    
+    json_louvain = {
+        "qtd_communities": qtdcomunidades,
+        "sizes": qtdelementos,
+        "modularity": community_louvain.modularity(particao, graph, weight='weight'),
+    }
 
     # --- Plot: crie figura nova e dê show() ---
     fig, ax = plt.subplots(figsize=(6,4))
@@ -152,7 +220,7 @@ def communityDetection(graph, neighborhoods, study, lim_inf, show=True, save_csv
         dfparticao.to_csv(fname, index=True)
 
     # Retorne também a figura, se quiser salvar PNG fora
-    return dfparticao, fig, ax, particao
+    return dfparticao, fig, particao, json_louvain
 
 def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_em=None, dpi=150):
     """
@@ -207,8 +275,7 @@ def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_
     # Salvar se solicitado
     if salvar_em:
         plt.savefig(salvar_em, dpi=dpi, bbox_inches='tight')
-        print(f"✅ Gráfico salvo em: {salvar_em}")
-
+    
     # plt.show()
 
 def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_em=None, dpi=150):
@@ -268,112 +335,52 @@ def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, s
 
     plt.show()
 
-def createGraph(study, cos_sim = 0.5):
-    print("\n\n*********** ESTUDO - " + studies[study] + "*************\n\n")
-    
-    # pega a base de estudo a ser utilizada
-    base = bases[study] 
-    similarity = cosine_similarity(base, base)  # encontra similaridade global
-    
-    df_sim = pd.DataFrame(similarity)
-    df_sim.columns = base.index
-    df_sim.index = base.index
-    
-    sim_values = similarity[np.triu_indices(neighborhoods, k = 1)] #lista de valores de similaridade
-    
-    for i in range(neighborhoods):
-        similarity[i,i] = 0  # elimina futuras autoarestas
-    
-    # corte das arestas baseado na estatistica descritiva
-    lim_inf = pd.DataFrame(sim_values).describe().transpose()['75%'][0]  # limite inferior dos pesos das arestas
-    print("Corte das Arestas [ " + studies[study] + "]: ", lim_inf)
 
-    # usa a similaridade passada como parametro
-    # lim_inf = cos_sim
-    
-    similarity2 = np.where(similarity < lim_inf, 0, similarity)  # anula similaridades abaixo do limite
-    adjacencias = np.where(similarity < lim_inf, 0, 1)           # cria matriz binaria de adjacencias 
-    
-    df_sim2 = pd.DataFrame(similarity2) # matriz de referencia para construcao do grafo
-    df_sim2.columns = df_sim.index
-    df_sim2.index = df_sim.index
-    
-    graph = nx.from_pandas_adjacency(df_sim2)  # constroi o grafo
 
-    # garante que o grafo esteja conectado (pega o maior componente conectado)
-    if not nx.is_connected(graph):
-        graph = max((graph.subgraph(c).copy() for c in nx.connected_components(graph)), key=len)
+def main():
+    cos_sim = 0.5 # default
+    studies = ['original', 'pca', 'yj', 'pca+yj']
+    study = 0       # default
 
-    #plot_grafo(graph, titulo=f"Grafo - {studies[study]}", usar_peso=True, rotulos=True)
-    
-    # Nome do arquivo baseado no estudo
-    arquivo_saida = f"data/grafo_{studies[study]}.png"
+    if(len(sys.argv)) >= 2:
+        message = sys.argv[1]
+        cos_sim = float(message)
 
-    # Plotar e salvar
-    plot_grafo(
-        graph,
-        titulo=f"Grafo - {studies[study]}",
-        usar_peso=True,
-        rotulos=True,
-        salvar_em=arquivo_saida
-    )
-    
-    # print as listas os componentes conectados
-    # for item in nx.connected_components(graph):
-    #     print("\n", len(item), sorted(item))
-    
-    bairrosCG = sorted(max(nx.connected_components(graph), key = len))  # bairros do componente gigante
-    gigante = graph.subgraph(bairrosCG)  # cria subgrafo com esses bairros
+    if(len(sys.argv)) >= 3:
+        study = int(sys.argv[2])
 
-    graph_info = {
-        "nodes": len(graph.nodes),
-        "edges": len(graph.edges),
-        "degree": sum(dict(graph.degree).values()) / len(graph.nodes)
-    }
-    
-    print('Number of nodes', len(graph.nodes))
-    print('Number of edges', len(graph.edges))
-    print('Average degree', sum(dict(graph.degree).values()) / len(graph.nodes))
-    
-    similarityCG = nx.adjacency_matrix(gigante).todense()  # exporta a matriz de adjacencias do componente gigante
-    
-    dfsimCG = pd.DataFrame(similarityCG)
-    dfsimCG.columns = [list(bairrosCG)]
-    dfsimCG.index = [list(bairrosCG)]
-    
-    # Chamada da função passando lim_inf
-    # df_communities, fig, ax, communities = communityDetection(gigante, len(bairrosCG), studies[study], lim_inf, show=False, outdir='data')
+    # cria as bases de estudo
+    df_pca = applyPCA(df, 15, 90)
+    df_yj = powerTransformer(df)
+    df_pcayj = applyPCA(df_yj, 15, 90)
 
-    
-    # with open(f"data/communities_{studies[study]}.json", "w") as file:     
-    #     json.dump(communities, file, indent=4)
+    bases = [df, df_pca, df_yj, df_pcayj] 
 
-    # # salvar PNG do gráfico de barras
+    #  constroi o grafo 
+    res, num_bairrosCG, gigante, lim_inf = createGraph(bases[study], study, cos_sim) 
+
+    # cria o json para enviar para o node
+    json_graph = json.dumps(res)
+    print(json_graph) 
+
+    sys.stdout.flush()
+
+    #  Chamada da função passando lim_inf
+    df_communities, fig, communities, res = communityDetection(gigante, num_bairrosCG, studies[study], lim_inf, show=False, outdir='data')
+
+    json_communities = json.dumps(res)
+    print(json_communities)
+
+
+    with open(f"data/communities_{studies[study]}.json", "w") as file:     
+        json.dump(communities, file, indent=4)
+
+
+    # salvar PNG do gráfico de barras
     # fig.savefig(f"comunidades_{studies[study]}_liminf_{lim_inf:.4f}.png", dpi=150)
 
-    return graph_info
-
-
-# cria as bases de estudo
-studies = ['original', 'pca', 'yj', 'pca+yj']
-
-df_pca = applyPCA(df, 15, 90)
-df_yj = powerTransformer(df)
-df_pcayj = applyPCA(df_yj, 15, 90)
-
-bases = [df, df_pca, df_yj, df_pcayj] 
-
-
-#  constroi o grafo 
-res = createGraph(0) 
-
-# cria o json para enviar para o node
-json_graph = {}
-json_obj = json.dumps(res)
-print(json_obj) 
-
-
-sys.stdout.flush()
+if __name__ == "__main__":
+    main()
 
 
 
