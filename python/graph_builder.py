@@ -201,12 +201,14 @@ def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_
 def main():
     cos_sim = 0.5 # default
     study = 0     # default
+    num_of_comp = 15 # default
+    min_var = 90     # default
 
-    if(len(sys.argv)) >= 2:
-        cos_sim = float(sys.argv[1])
+    # if(len(sys.argv)) >= 2:
+    #     cos_sim = float(sys.argv[1])
 
-    if(len(sys.argv)) >= 3:
-        study = int(sys.argv[2])
+    # if(len(sys.argv)) >= 3:
+    #     study = int(sys.argv[2])
 
     # check to see if csv file exists
     try:
@@ -224,10 +226,19 @@ def main():
     
     studies = ['original', 'pca', 'yj', 'pca+yj']
 
+    if(len(sys.argv)) >= 2:
+        data = sys.argv[1].strip('[]').split(',')
+        cos_sim = float(data[0])
+        study = int(data[1])
+        if study == 1 or study == 3:
+            num_of_comp = int(data[2])
+            min_var = int(data[3])
+
+
     # cria as bases de estudo
-    df_pca = applyPCA(df, 15, 90)
+    df_pca = applyPCA(df, num_of_comp, min_var)
     df_yj = powerTransformer(df)
-    df_pcayj = applyPCA(df_yj, 15, 90)
+    df_pcayj = applyPCA(df_yj, num_of_comp, min_var)
 
     bases = [df, df_pca, df_yj, df_pcayj] 
 
