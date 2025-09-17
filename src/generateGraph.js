@@ -21,9 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const weightValue = document.getElementById('weight-value');
   weightValue.textContent = slider.value; // Inicializa com o valor do slider
 
-
-  let selectedItems = []; // Array para gerenciar os itens selecionados
-
+ // Buttons 
   const generateBtn = document.getElementById('generate-graph');
   const updateBtn = document.getElementById('update-dataset');
   const detectCommunityBtn = document.getElementById('detect-community');
@@ -34,8 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let study = 'pca'; // default study
   let cosSim = 0;    // stores the cossine similarity threshold
   let fullData = []; // Stores all the parsed data from the CSV
-  let communitiesQty = 0; // Stores the number of communities detected
-  let nodesPerCommunity = {}; // Stores nodes per community
+  let selectedItems = []; // Array para gerenciar os itens selecionados
+
   let originalColumns = []; // Original columns from the dataset
   let originalData = []; // Original data from the dataset
   let graphOBJ = {}; // Graph object from Python
@@ -144,11 +142,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     console[ch === 'stderr' ? 'error' : 'log']('[PY]', msg.trim());
   });
 
+
+  // 4) Gerar grafo quando clicar no botão
   generateBtn.addEventListener('click', async () => {
 
     study = document.querySelector('input[name="study"]:checked');
-    const res = await window.pythonAPI.run('louvain.py', [cosSim, study.value]);
-    
+
+    const res = await window.pythonAPI.run('graph_builder.py', [cosSim, study.value]);
+
     if (res.code !== 0) {
       console.error('Python falhou:', res.stderr);
       return;
@@ -171,9 +172,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   });
 
+  // 5) Detectar comunidades quando clicar no botão
   detectCommunityBtn.addEventListener('click', async () => {
-    console.log('Detecting communities...');
-    let csv;
+      
     destroyCharts(); // Destroi gráficos anteriores, se existirem
 
     if (!graphOBJ || !graphOBJ.nodes) {
@@ -181,11 +182,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const filePath =  window.electronAPI.getPath(`data/communities_${studies[study.value]}.csv`); // .csv with detceted communities
+    study = document.querySelector('input[name="study"]:checked');
+
+    const res = await window.pythonAPI.run('louvain_method.py', [study.value]);
+    
+    if (res.code !== 0) {
+      console.error('Python falhou:', res.stderr);
+      return;
+    } 
 
     try {
-      csv = await window.electronAPI.readFile(filePath);
-      console.log('File read successfully');
+  
+      const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
+      louvainOBJ = data.louvain; // <-- parse do objeto louvian
 
       communitiesQtyCard.textContent = louvainOBJ.communities || 'N/A';
       commSizeCard.textContent = louvainOBJ.sizes || 'N/A';
@@ -193,7 +202,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       imgLouvain.src = `../data/communities_${studies[study.value]}.png?${new Date().getTime()}`; // Força reload da imagem
 
-      parseCSV(csv);
       renderCommunityChart(fullData);
 
     } catch (error){
@@ -203,6 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   });
 
+  // 6) Exportar dados quando clicar no botão
   exportBtn.addEventListener('click', async () => {
     
     // const result = await window.electronAPI.exportFile("filtered_dataset.csv");
@@ -267,39 +276,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       selectedContainer.appendChild(tag);
     });
   }
-
-  function parseCSV(content){
-      Papa.parse(content, {
-      header: true, 
-      dynamicTyping: true, 
-      skipEmptyLines: true, 
-      complete: (results) => {
-          fullData = results.data; 
-          columns = results.meta.fields; 
-
-          communitiesQty = Math.max(...fullData.map(row => row['Comunidade'])) + 1;
-          console.log('Comunidades detectadas:', communitiesQty); 
-
-          nodesPerCommunity = {};
-          fullData.forEach(row => {
-              const community = row['Comunidade'];
-              if (!nodesPerCommunity[community]) {
-                  nodesPerCommunity[community] = 0;
-              }
-              nodesPerCommunity[community]++;
-          });
-      },
-      error: (err) => {
-          console.error('Error parsing the CSV:', err);
-          alert('Error processing the CSV file. Please check the file format.');
-      }
-  });
-  }
-
-
+  
   function renderCommunityChart(){
-    const categories = Array.from({length: communitiesQty}, (_, i) => `Comunidade ${i}`);
-    const values = categories.map((_, i) => nodesPerCommunity[i] || 0);
+    const categories = Array.from({length: louvainOBJ.communities}, (_, i) => `Comunidade ${i}`);
+    const values = categories.map((_, i) => louvainOBJ.sizes[i] || 0);
 
     barsChartInstance = new ApexCharts(barsContainer, {
       chart: { type: 'bar', height: 350, toolbar: { show: true } },
@@ -313,8 +293,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       yaxis: {
           title: { text:"Number of Nodes" }
       }
-  });
-  barsChartInstance.render();
+    });
+    barsChartInstance.render();
   }
 
   /**
