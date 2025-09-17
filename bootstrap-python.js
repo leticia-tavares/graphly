@@ -113,7 +113,7 @@ function dirInAppRoot(dirName) {
 
 async function prepare({
   venvDirName = 'pyenv',
-  requirementsFileName = 'graphly_requirements.txt',
+  requirementsFileName = 'requirements.txt',
   wheelsDirName = 'wheels',
   // Estratégia:
   //  - offline=true  => tenta offline direto (wheels)
