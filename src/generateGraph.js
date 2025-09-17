@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const weightValue = document.getElementById('weight-value');
   weightValue.textContent = slider.value; // Inicializa com o valor do slider
 
+  // input radio study
+  const studyInputs = document.querySelectorAll('input[name="study"]');
+  const container = document.getElementById('extra-inputs-container'); 
+
  // Buttons 
   const generateBtn = document.getElementById('generate-graph');
   const updateBtn = document.getElementById('update-dataset');
@@ -64,6 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const columns = results.meta.fields;
       originalColumns = [...columns]; // Guarda as colunas originais
+      console.log('Numero de colunas:', originalColumns.length);
       originalData = [...results.data]; // Guarda os dados originais
 
       if (columns.length < 2) {
@@ -130,6 +135,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  studyInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      if(this.value == 1 || this.value == 3) {
+        // Adiciona os inputs extras apenas se ainda não existem
+        if (!container.querySelector('input[name="numOfComp"]')) {
+          container.innerHTML = `
+            <input type="text" name="numOfComp" placeholder="Número de componentes mínimos" />
+            <input type="text" name="minVar" placeholder="Variância mínima" />
+          `;
+        }
+      } else {
+        container.innerHTML = '';
+      }
+    });
+  });
+
   // Atualiza o valor do peso quando o slider é movido
   slider.addEventListener('input', () => {
     weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
@@ -145,32 +166,47 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 4) Gerar grafo quando clicar no botão
   generateBtn.addEventListener('click', async () => {
+    let args = getArgsArray(cosSim, study);
+    
+    if(args.length > 0 ){
+      try{
+        const res = await window.pythonAPI.run('graph_builder.py', [args]);
 
-    study = document.querySelector('input[name="study"]:checked');
+        if (res.code !== 0) {
+          console.error('Python falhou:', res.stderr);
+          return;
+        } 
+        try {
 
-    const res = await window.pythonAPI.run('graph_builder.py', [cosSim, study.value]);
+          imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
+          const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
 
-    if (res.code !== 0) {
-      console.error('Python falhou:', res.stderr);
-      return;
-    } 
-    try {
+          graphOBJ = data.graph;  // <-- parse do objeto graph
+          louvainOBJ = data.louvain; // <-- parse do objeto louvian
 
-      imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
-      const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
+          totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
+          totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
+          avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
 
-      graphOBJ = data.graph;  // <-- parse do objeto graph
-      louvainOBJ = data.louvain; // <-- parse do objeto louvian
+        } catch (e) {
+          console.error('Stdout não é JSON válido:', res.stdout, e);
+        }
 
-      totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
-      totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
-      avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
 
-    } catch (e) {
-      console.error('Stdout não é JSON válido:', res.stdout, e);
+      } catch (e) {
+        console.error('Stdout não é JSON válido ou outra falha:', res.stdout, e);
+      }
+    } else {
+        const response = await window.electronAPI.showDialog({
+        type: 'info',
+        buttons: ['OK'],
+        title: 'Warning',
+        message: 'Please enter valid numbers.'
+      });
+      
     }
-
   });
+
 
   // 5) Detectar comunidades quando clicar no botão
   detectCommunityBtn.addEventListener('click', async () => {
@@ -303,6 +339,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   function destroyCharts() {
         if (barsChartInstance) barsChartInstance.destroy();
         barsContainer.innerHTML = "";
+  }
+
+  function getArgsArray(cosSim, study) {
+    let args = [];
+    study = document.querySelector('input[name="study"]:checked');
+
+    if (study.value == 1 || study.value == 3){ // Se for pca ou pca+yj pega inputs extras{ 
+      const numOfCompInput = container.querySelector('input[name="numOfComp"]');
+      const minVarInput = container.querySelector('input[name="minVar"]');
+      
+      const numOfComp = numOfCompInput.value;
+      const minVar = minVarInput.value;
+
+      if (!numOfComp || !minVar || numOfComp <= 0 || numOfComp >= (originalColumns.length - 1) || minVar <= 0 || minVar > 100) {
+        args = [];
+
+      } else {
+        args = [cosSim, study.value, numOfComp, minVar];
+      }
+    } else {
+      args = [cosSim, study.value];
+    }
+    return args;
   }
 
 });

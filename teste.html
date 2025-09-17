@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inputs Modernos</title>
+<style>
+  /* Inputs radio */
+  input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.3s ease;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  input[type="radio"]:focus {
+    box-shadow: 0 0 0 3px rgba(21, 156, 228, 0.4);
+  }
+  input[type="radio"]:checked {
+    border-color: #2196f3;
+    background-color: #2196f3;
+  }
+  input[type="radio"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+  }
+  label {
+    cursor: pointer;
+    font-size: 16px;
+    margin-right: 20px;
+    user-select: none;
+  }
+
+  /* Inputs texto */
+  input[type="text"] {
+    font-size: 16px;
+    padding: 10px 14px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 300px;
+    box-sizing: border-box;
+    display: block;
+    margin-bottom: 12px;
+  }
+  input[type="text"]:focus {
+    border-color: #2196f3;
+    box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
+  }
+
+  /* Container inputs extras */
+  #extra-inputs-container {
+    margin-top: 15px;
+  }
+</style>
+</head>
+<body>
+
+<h2>Escolha um estudo</h2>
+
+<label>
+  <input type="radio" name="study" value="0" /> Original Data
+</label>
+<label>
+  <input type="radio" name="study" value="1" /> PCA
+</label>
+<label>
+  <input type="radio" name="study" value="2" /> Yeo-Johnson
+</label>
+<label>
+  <input type="radio" name="study" value="3" /> Yeo-Johnson + PCA
+</label>
+
+<div id="extra-inputs-container"></div>
+
+<script>
+  const studyInputs = document.querySelectorAll('input[name="study"]');
+  const container = document.getElementById('extra-inputs-container');
+
+  studyInputs.forEach(input => {
+    input.addEventListener('change', () => {
+      if (input.checked && (input.value == '1' || input.value == '3')) {
+        if (!container.querySelector('input[name="numOfComp"]')) {
+          container.innerHTML = `
+            <input type="text" name="numOfComp" placeholder="Número de componentes mínimos" />
+            <input type="text" name="minVar" placeholder="Variância mínima" />
+          `;
+        }
+      } else if (input.checked) {
+        container.innerHTML = '';
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
