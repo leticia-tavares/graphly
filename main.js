@@ -322,7 +322,7 @@ app.whenReady().then(async () => {
   try {
     const { pythonBin } = await py.prepare({
       venvDirName: 'pyenv',
-      requirementsFileName: 'graphly_requirements.txt',
+      requirementsFileName: 'requirements.txt',
       wheelsDirName: 'wheels',      // inclua na build p/ offline
       offline: false,               // mude para true se quiser forçar offline
       // indexUrl: 'https://pypi.org/simple',

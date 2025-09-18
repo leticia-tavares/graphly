@@ -19,7 +19,7 @@
       "package.json"
     ],
     "extraResources": [
-      "graphly_requirements.txt",
+      "requirements.txt",
       { "from": "wheels", "to": "wheels", "filter": ["**/*"] },
       { "from": "python", "to": "python", "filter": ["**/*.py","**/*.txt","**/*.pkl"] }
     ],

@@ -11,8 +11,6 @@ from matplotlib.lines import Line2D
 
 from community import community_louvain
 
-
-
 def communityDetection(graph, study, save_csv=True):
     """
     Detecta comunidades (Louvain) e plota distribuição de tamanhos.
