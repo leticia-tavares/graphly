@@ -8,12 +8,13 @@ const fs = require('fs');
 const py = require('./bootstrap-python');
 
 // ----- Global Variables -----
+const dataCleanDir = path.join(app.getPath('userData'), 'data');
 let PYTHON_BIN;
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
 
 
-// Resolve caminho do script na pasta python/ (dev vs empacotado)
+// Resolves the path to the script in the python/ folder (dev vs packaged)
 function resolvePy(relScript) {
   const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
   return path.join(root, 'python', relScript);
@@ -299,7 +300,7 @@ ipcMain.handle('export-data', async () => {
 });
 
 
-// IPC — roda um script Python e devolve {code, stdout, stderr}
+// IPC — runs a Python script and returns {code, stdout, stderr}
 ipcMain.handle('python:run', async (event, relScript, args = []) => {
   if (!PYTHON_BIN) throw new Error('Python não inicializado.');
   const script = resolvePy(relScript);
@@ -339,15 +340,12 @@ app.whenReady().then(async () => {
 
 // Cleanup data directory on exit
 app.on('before-quit', () => {
-
-    if (process.platform !== 'darwin') {
-      try {
-        // força e recursivo; não lança erro se já não existir
-        fs.rmSync(path.join(__dirname, 'data'), { recursive: true, force: true });
-        console.log('Data directory removed successfully.');
-      } catch (err) {
-        console.error('Error removing data directory:', err);
-      }
+  try {
+    //fs.rmSync(dataCleanDir, { recursive: true, force: true });
+    fs.rmSync(path.join(__dirname, 'data'), { recursive: true, force: true });
+    console.log('Data directory removed successfully:', dataDir);
+  } catch (err) {
+    console.error('Error removing data directory:', err);
   }
 });
 
