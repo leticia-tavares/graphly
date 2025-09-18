@@ -17,12 +17,12 @@ def communityDetection(graph, study, save_csv=True):
     """
     Detecta comunidades (Louvain) e plota distribuição de tamanhos.
     """
-    # --- métricas de centralidade (ok manter como está) ---
+    # --- métricas de centralidade  ---
     metricas = [list(nx.degree_centrality(graph).values())]
     metricas.append(list(nx.clustering(graph, weight='weight').values()))
     metricas.append(list(nx.closeness_centrality(graph).values()))
     
-    # As duas abaixo exigem grafo conectado; "gigante" já é o componente gigante
+    # exigem grafo conectado
     metricas.append(list(nx.current_flow_closeness_centrality(graph, weight='weight').values()))
     metricas.append(list(nx.betweenness_centrality(graph, weight='weight', normalized=True).values()))
     metricas.append(list(nx.current_flow_betweenness_centrality(graph, weight='weight').values()))
@@ -34,6 +34,7 @@ def communityDetection(graph, study, save_csv=True):
         columns=['C.grau','C.clustering','C.closeness','C.cf.closeness',
                  'C.betweenness','C.cf.betweenness','C.load','C.harmonic']
     )
+    
     dfmetricas.index = list(graph.nodes)
 
     # --- Louvain ---

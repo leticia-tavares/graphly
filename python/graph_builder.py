@@ -195,7 +195,29 @@ def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_
     if salvar_em:
         plt.savefig(salvar_em, dpi=dpi, bbox_inches='tight')
     
-    # plt.show()
+
+def apply_study(df, study, num_of_comp=15, min_var=90):
+    """
+    Aplica a transformação de dados conforme o estudo selecionado.
+
+    Args:
+        df (dataframe): dataset original
+        study (int): índice do estudo a ser aplicado
+        num_of_comp (int, optional): número de componentes para PCA. Padrão é 15.
+        min_var (int, optional): variância mínima para PCA. Padrão é 90.
+
+    Returns:
+        dataframe: dataset transformado conforme o estudo selecionado
+    """
+    if study == 0:
+        return df  # original
+    elif study == 1:
+        return applyPCA(df, num_of_comp, min_var)  # pca
+    elif study == 2:
+        return powerTransformer(df)  # yeo-johnson
+    else:
+        return applyPCA(powerTransformer(df), num_of_comp, min_var)  # pca + yeo-johnson
+    
 
     
 def main():
@@ -203,12 +225,6 @@ def main():
     study = 0     # default
     num_of_comp = 15 # default
     min_var = 90     # default
-
-    # if(len(sys.argv)) >= 2:
-    #     cos_sim = float(sys.argv[1])
-
-    # if(len(sys.argv)) >= 3:
-    #     study = int(sys.argv[2])
 
     # check to see if csv file exists
     try:
@@ -219,8 +235,6 @@ def main():
         # lê o dataset original
         df = pd.read_csv('data/original_dataset.csv', index_col=0)
 
-    # lê o dataset original
-    # df = pd.read_csv('data/original_dataset.csv', index_col=0)
 
     neighborhoods = df.shape[0] # number of neighborhoods
     
@@ -234,16 +248,11 @@ def main():
             num_of_comp = int(data[2])
             min_var = int(data[3])
 
+    # cria a base de acordo com o estudo selecionado
+    df_study = apply_study(df, study, num_of_comp, min_var)
 
-    # cria as bases de estudo
-    df_pca = applyPCA(df, num_of_comp, min_var)
-    df_yj = powerTransformer(df)
-    df_pcayj = applyPCA(df_yj, num_of_comp, min_var)
-
-    bases = [df, df_pca, df_yj, df_pcayj] 
-
-    #  constroi o grafo 
-    res, gigante, graph = createGraph(bases[study], study, neighborhoods, studies, cos_sim) 
+    # constroi o grafo
+    res, gigante, graph = createGraph(df_study, study, neighborhoods, studies, cos_sim) 
 
     # graph data to json
     json_graph = json.dumps(res)
