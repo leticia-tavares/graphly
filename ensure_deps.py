@@ -19,22 +19,45 @@ import sys, subprocess, importlib
 from typing import Dict, Optional
 
 def _pip(*args: str) -> int:
+    """
+    Chama pip via subprocess.
+    Args: argumentos para pip, ex: "install", "pandas>=2.2
+
+    Returns:
+        int: código de saída do pip
+    """
+
     cmd = [sys.executable, "-m", "pip"] + list(args)
     return subprocess.call(cmd)
 
+
 def _installed(modname: str) -> bool:
+    """
+    Verifica se um módulo está instalado.
+    Args:
+        modname (str): nome do módulo
+
+    Returns:
+        bool: True se instalado, False caso contrário
+    """
     try:
         importlib.import_module(modname)
         return True
     except Exception:
         return False
+    
 
 def ensure(pkgs: Dict[str, str],
           extra_index_url: Optional[str] = None,
           find_links: Optional[str] = None,
           no_index: bool = False) -> None:
-    """Garante instalação (ou atualização) de pacotes.
-    pkgs: dict {nome_modulo_ou_pacote: spec_version}, ex: {"pandas": ">=2.2"}
+    """
+    Garante instalação (ou atualização) de pacotes.
+    Args:
+        pkgs: dict {nome_modulo_ou_pacote: spec_version}, ex: {"pandas": ">=2.2"}
+        extra_index_url: URL adicional para buscar pacotes (opcional)
+        find_links: caminho local ou URL para buscar pacotes (opcional)
+        no_index: se True, não usa o índice PyPI padrão (útil para ambientes offline)
     """
     # Atualiza pip básico
     _pip("install", "--upgrade", "pip", "setuptools", "wheel")

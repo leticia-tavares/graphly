@@ -11,9 +11,19 @@ from matplotlib.lines import Line2D
 
 from community import community_louvain
 
-def communityDetection(graph, study, save_csv=True):
+def communityDetection(graph: nx.Graph, study: int, save_csv: bool = True) -> tuple:
+
     """
     Detecta comunidades (Louvain) e plota distribuição de tamanhos.
+    Args:
+        graph (nx.Graph): rede do dataset original
+        study (int): índice do estudo
+        save_csv (bool, optional): opção de salvar o dataset. Defaults to True.
+
+    Returns:
+        dfparticao: pd.DataFrame
+        particao: dict
+        json_louvain: dict
     """
     # --- métricas de centralidade  ---
     metricas = [list(nx.degree_centrality(graph).values())]
@@ -59,12 +69,12 @@ def communityDetection(graph, study, save_csv=True):
     return dfparticao, particao, json_louvain
 
 
-def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, 
-                     salvar_em=None, dpi=150, particao=None, mostrar_legenda=True, cmap_base="tab20"):
+def plot_communities(G: nx.Graph, titulo: str = "Rede", usar_peso: bool = True, seed: int = 42, rotulos: bool = False, 
+                     salvar_em = None, dpi: int = 150, particao = None, mostrar_legenda: bool = True, cmap_base: str = "tab20"):
     """
     Plota um grafo de forma simples e legível e opcionalmente salva como imagem.
     
-    Parâmetros:
+    Args:
         G          : networkx.Graph
         titulo     : título do gráfico
         usar_peso  : bool -> se True, usa atributo 'weight' no layout/tamanho de arestas
@@ -145,7 +155,6 @@ def plot_communities(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False,
         plt.savefig(salvar_em, dpi=dpi, bbox_inches='tight')
 
     # plt.show()
-
 
 
 def main():

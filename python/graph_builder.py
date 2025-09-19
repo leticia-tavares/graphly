@@ -16,7 +16,7 @@ from sklearn import preprocessing
 from sklearn.preprocessing import PowerTransformer
 
 
-def applyPCA(data, num_of_comp, var):
+def applyPCA(data: pd.DataFrame, num_of_comp: int, var: float) -> pd.DataFrame:
     """
     Função para aplicar PCA incremental em um dataframe de dados
 
@@ -51,7 +51,7 @@ def applyPCA(data, num_of_comp, var):
     
     return df_pca
 
-def powerTransformer(data):
+def powerTransformer(data: pd.DataFrame) -> pd.DataFrame:
     """
     Transforma os dados para ficarem mais próximos de uma distribuição normal
 
@@ -71,7 +71,19 @@ def powerTransformer(data):
     df_pt.index = data.index
     return df_pt
 
-def createGraph(base, study, neighborhoods, studies,cos_sim = 0.5):
+def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: list[str], cos_sim = 0.5) -> tuple:
+    """
+    Cria o grafo a partir da base de dados transformada
+    Args:
+        base (pd.Dataframe): _description_
+        study (int): _description_
+        neighborhoods (int): _description_
+        studies (str): _description_
+        cos_sim (float, optional): _description_. Defaults to 0.5.
+
+    Returns:
+        tuple: 
+    """
     
     # pega a base de estudo a ser utilizada
     similarity = cosine_similarity(base, base)  # encontra similaridade global
@@ -141,7 +153,8 @@ def createGraph(base, study, neighborhoods, studies,cos_sim = 0.5):
     return graph_info, gigante, graph
 
 
-def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_em=None, dpi=150):
+def plot_grafo(G: nx.Graph, titulo: str ="Rede", usar_peso: bool = True, 
+               seed: int = 42, rotulos=False, salvar_em = None, dpi: int = 150) -> None:
     """
     Plota um grafo de forma simples e legível e opcionalmente salva como imagem.
     
@@ -194,9 +207,8 @@ def plot_grafo(G, titulo="Rede", usar_peso=True, seed=42, rotulos=False, salvar_
     # Salvar se solicitado
     if salvar_em:
         plt.savefig(salvar_em, dpi=dpi, bbox_inches='tight')
-    
 
-def apply_study(df, study, num_of_comp=15, min_var=90):
+def apply_study(df: pd.DataFrame, study: int, num_of_comp: int = 15, min_var: int = 90) -> pd.DataFrame:
     """
     Aplica a transformação de dados conforme o estudo selecionado.
 
