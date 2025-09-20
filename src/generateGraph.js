@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   // 3) Exportar CSV filtrado para /data quando clicar no botão
   updateBtn.addEventListener('click', async () => {
-    alert(`Itens selecionados: ${selectedItems.join(', ') || 'Nenhum item selecionado.'}`);
+    alert(`Selected: ${selectedItems.join(', ') || 'No columns selected.'}`);
 
     try {
       const remainingColumns = originalColumns.filter(c => !selectedItems.includes(c));
@@ -109,8 +109,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.electronAPI.showDialog({
           type: 'warning',
           buttons: ['OK'],
-          title: 'Atenção',
-          message: 'Você excluiu todas as colunas. Selecione menos colunas para excluir.'
+          title: 'Attention',
+          message: 'You deleted all columns. Please select at least a few columns to keep.'
         });
         return;
       }
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await window.electronAPI.showDialog({
         type: 'error',
         buttons: ['OK'],
-        title: 'Erro ao salvar CSV',
+        title: 'Error saving file',
         message: String(e?.message || e)
       });
     }
@@ -141,8 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Adiciona os inputs extras apenas se ainda não existem
         if (!container.querySelector('input[name="numOfComp"]')) {
           container.innerHTML = `
-            <input type="text" name="numOfComp" placeholder="Número de componentes mínimos" />
-            <input type="text" name="minVar" placeholder="Variância mínima" />
+            <input type="text" name="numOfComp" placeholder="Number of minimum components" />
+            <input type="text" name="minVar" placeholder="Minimum Variance" />
           `;
         }
       } else {
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const result = await window.electronAPI.exportData();
 
     if (result.canceled) {
-      alert('Exportação cancelada pelo usuário.');
+      alert('Export canceled by user.');
       return;
     }
     
@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    alert('Todos os arquivos foram exportados com sucesso!');
+    alert('All files exported successfully!');
   });
 
   async function createCSVFile(data, path){
