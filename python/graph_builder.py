@@ -87,6 +87,7 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
     
     # pega a base de estudo a ser utilizada
     similarity = cosine_similarity(base, base)  # encontra similaridade global
+    # similarity = cosine_similarity(base)  # encontra similaridade global
     
     df_sim = pd.DataFrame(similarity)
     df_sim.columns = base.index
@@ -229,6 +230,21 @@ def apply_study(df: pd.DataFrame, study: int, num_of_comp: int = 15, min_var: in
     else:
         return applyPCA(powerTransformer(df), num_of_comp, min_var)  # pca + yeo-johnson
     
+def check_first_column(path_csv: str) -> pd.DataFrame:
+
+    df = pd.read_csv(path_csv)
+    first_col = df.columns[0]
+
+    # checagem de unicidade e nulos
+    is_unique = df[first_col].is_unique
+    has_nulls = df[first_col].isnull().any()
+
+    if is_unique and not has_nulls:
+        df = pd.read_csv(path_csv, index_col=0)
+        return df
+    else:
+        df = pd.read_csv(path_csv)
+        return df
 
     
 def main():
@@ -240,11 +256,15 @@ def main():
     # check to see if csv file exists
     try:
         with open('data/filtered_dataset.csv', 'r') as f:
-            df = pd.read_csv('data/filtered_dataset.csv', index_col=0)
+            # df = pd.read_csv('data/filtered_dataset.csv', index_col=0)
+            df = check_first_column('data/filtered_dataset.csv')
             pass
     except FileNotFoundError:
         # lê o dataset original
-        df = pd.read_csv('data/original_dataset.csv', index_col=0)
+        df = check_first_column('data/original_dataset.csv')
+        # df = pd.read_csv('data/original_dataset.csv', index_col=0)
+        # df = pd.read_csv('data/original_dataset.csv')
+
 
 
     neighborhoods = df.shape[0] # number of neighborhoods
