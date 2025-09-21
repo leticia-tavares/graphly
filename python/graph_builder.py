@@ -113,7 +113,6 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
     # fname = f"data/sim_matrix_{studies[study]}_liminf_{lim_inf:.4f}.csv"
     fname = f"data/sim_matrix_{studies[study]}.csv"
 
-
     df_sim2.to_csv(fname, index=True)
     
     graph = nx.from_pandas_adjacency(df_sim2)  # constroi o grafo
@@ -127,16 +126,16 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
     graph_img = f"data/grafo.png"
 
     # Plotar e salvar
-    plot_grafo(
+    plot_graph(
         graph,
-        titulo=f"Network - {studies[study]}",
-        usar_peso=True,
-        rotulos=True,
-        salvar_em=graph_img
+        title=f"Network - {studies[study]}",
+        use_weight=True,
+        labels=True,
+        save_at=graph_img
     )
     
-    bairrosCG = sorted(max(nx.connected_components(graph), key = len))  # bairros do componente gigante
-    gigante = graph.subgraph(bairrosCG)  # cria subgrafo com esses bairros
+    nodesCG = sorted(max(nx.connected_components(graph), key = len))  # bairros do componente gigante
+    gigante = graph.subgraph(nodesCG)  # cria subgrafo com esses bairros
 
     graph_info = {
         "nodes": len(graph.nodes),
@@ -147,37 +146,37 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
     # similarityCG = nx.adjacency_matrix(gigante).todense()  # exporta a matriz de adjacencias do componente gigante
     
     # dfsimCG = pd.DataFrame(similarityCG)
-    # dfsimCG.columns = [list(bairrosCG)]
-    # dfsimCG.index = [list(bairrosCG)]
+    # dfsimCG.columns = [list(nodesCG)]
+    # dfsimCG.index = [list(nodesCG)]
     
     return graph_info, gigante, graph
 
 
-def plot_grafo(G: nx.Graph, titulo: str ="Rede", usar_peso: bool = True, 
-               seed: int = 42, rotulos=False, salvar_em = None, dpi: int = 150) -> None:
+def plot_graph(G: nx.Graph, title: str ="Rede", use_weight: bool = True, 
+               seed: int = 42, labels=False, save_at = None, dpi: int = 150) -> None:
     """
     Plota um grafo de forma simples e legível e opcionalmente salva como imagem.
     
     Parâmetros:
         G          : networkx.Graph
-        titulo     : título do gráfico
-        usar_peso  : bool -> se True, usa atributo 'weight' no layout/tamanho de arestas
+        title     : título do gráfico
+        use_weight  : bool -> se True, usa atributo 'weight' no layout/tamanho de arestas
         seed       : int  -> semente para reprodutibilidade do layout
-        rotulos    : bool -> se True, mostra rótulos dos nós
-        salvar_em  : str  -> caminho do arquivo PNG para salvar a figura (ex.: 'grafo.png')
+        labels    : bool -> se True, mostra rótulos dos nós
+        save_at  : str  -> caminho do arquivo PNG para salvar a figura (ex.: 'grafo.png')
         dpi        : int  -> resolução da imagem salva
     """
-    pos = nx.spring_layout(G, weight='weight' if usar_peso else None, seed=seed)
+    pos = nx.spring_layout(G, weight='weight' if use_weight else None, seed=seed)
 
     # Tamanho do nó via grau
-    grau = dict(G.degree(weight='weight') if usar_peso else G.degree())
+    grau = dict(G.degree(weight='weight') if use_weight else G.degree())
     g_vals = np.array(list(grau.values()), dtype=float)
     if g_vals.max() == 0:
         g_vals += 1.0
     tamanhos = 300 * (g_vals / g_vals.max()) + 50
 
     # Espessura da aresta via peso
-    if usar_peso:
+    if use_weight:
         w = np.array([G[u][v].get('weight',1.0) for u,v in G.edges()], dtype=float)
         if w.max() == 0:
             w += 1.0
@@ -197,16 +196,16 @@ def plot_grafo(G: nx.Graph, titulo: str ="Rede", usar_peso: bool = True,
         ax=ax
     )
 
-    if rotulos:
+    if labels:
         nx.draw_networkx_labels(G, pos, font_size=8, ax=ax)
 
-    ax.set_title(titulo)
+    ax.set_title(title)
     ax.axis('off')
     plt.tight_layout()
 
     # Salvar se solicitado
-    if salvar_em:
-        plt.savefig(salvar_em, dpi=dpi, bbox_inches='tight')
+    if save_at:
+        plt.savefig(save_at, dpi=dpi, bbox_inches='tight')
 
 def apply_study(df: pd.DataFrame, study: int, num_of_comp: int = 15, min_var: int = 90) -> pd.DataFrame:
     """
