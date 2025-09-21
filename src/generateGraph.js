@@ -259,7 +259,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     
     if (result.error) {
-      alert('Erro: ' + result.error);
+      alert('Error: ' + result.error);
       return;
     }
 
@@ -314,12 +314,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   
   function renderCommunityChart(){
-    const categories = Array.from({length: louvainOBJ.communities}, (_, i) => `Comunidade ${i}`);
+    const categories = Array.from({length: louvainOBJ.communities}, (_, i) => `Community ${i}`);
     const values = categories.map((_, i) => louvainOBJ.sizes[i] || 0);
 
     barsChartInstance = new ApexCharts(barsContainer, {
       chart: { type: 'bar', height: 350, toolbar: { show: true } },
-      title: { text: "Bar Chart: Number of Communities detected", align: 'center' },
+      title: { text: "Bar Chart: Number of Communities Detected", align: 'center' },
       series: [{ name: "Nodes", data: values }],
       xaxis: { 
           categories: categories,
