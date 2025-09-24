@@ -142,9 +142,51 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Adiciona os inputs extras apenas se ainda não existem
         if (!container.querySelector('input[name="numOfComp"]')) {
           container.innerHTML = `
-            <input type="text" name="numOfComp" placeholder="Number of minimum components" />
-            <input type="text" name="minVar" placeholder="Minimum Variance" />
+              <div class="range-input">
+                <h3>Number of Minimum Components</h3>
+                <br>
+                <div class="slider-wrapper">
+                  <input type="range" class="slider-primary" id="comp-slider" min="0" step="1" value="10">
+                  <div class="slider-labels">
+                    <span>0</span> 
+                    <span id="max-comp-value"></span>
+                  </div>
+                  <span class="val-primary" id="comp-value">10</span>
+                </div>
+            </div>
+
+            <div class="range-input">
+                <h3>Minimum Variance</h3>
+                <br>
+                <div class="slider-wrapper">
+                  <input type="range" class="slider-primary" id="var-slider" min="0" max="100" step="0.5" value="70.0">
+                  <div class="slider-labels">
+                    <span>0</span> 
+                    <span>100</span>
+                  </div>
+                  <span class="val-primary" id="var-value">0.5</span>
+                </div>
+            </div>
           `;
+          const compSlider = container.querySelector('#comp-slider');
+          const compValue = container.querySelector('#comp-value');
+          const displayMaxValue = container.querySelector('#max-comp-value');
+
+          displayMaxValue.textContent = originalColumns.length - 1;
+          compSlider.max = originalColumns.length -1;
+
+          const varSlider = container.querySelector('#var-slider');
+          const varValue = container.querySelector('#var-value');
+          
+          varValue.textContent = varSlider.value;
+          varSlider.addEventListener('input', () => {
+            varValue.textContent = varSlider.value; // Atualiza o texto com o valor atual do slider
+          });
+
+          compValue.textContent = compSlider.value;
+          compSlider.addEventListener('input', () => {
+            compValue.textContent = compSlider.value; // Atualiza o texto com o valor atual do slider
+          });
         }
       } else {
         container.innerHTML = '';
@@ -157,7 +199,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     weightValue.textContent = slider.value; // Atualiza o texto com o valor atual do slider
     cosSim = slider.value;
   });
-
 
   // registre logs 1x (opcional)
   const offLogs = window.pythonAPI.onLog(({ ch, msg }) => {
@@ -192,8 +233,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (e) {
           console.error('Stdout não é JSON válido:', res.stdout, e);
         }
-
-
       } catch (e) {
         console.error('Stdout não é JSON válido ou outra falha:', res.stdout, e);
       }
@@ -204,7 +243,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         title: 'Warning',
         message: 'Please enter valid numbers.'
       });
-      
     }
   });
 
@@ -347,13 +385,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     study = document.querySelector('input[name="study"]:checked');
 
     if (study.value == 1 || study.value == 3){ // Se for pca ou pca+yj pega inputs extras{ 
-      const numOfCompInput = container.querySelector('input[name="numOfComp"]');
-      const minVarInput = container.querySelector('input[name="minVar"]');
+      const numOfCompInput = container.querySelector('#comp-slider');
+      const minVarInput = container.querySelector('#var-slider');
       
       const numOfComp = numOfCompInput.value;
       const minVar = minVarInput.value;
 
-      if (!numOfComp || !minVar || numOfComp <= 0 || numOfComp >= (originalColumns.length - 1) || minVar <= 0 || minVar > 100) {
+      if (!numOfComp >= (originalColumns.length - 1)) {
         args = [];
 
       } else {

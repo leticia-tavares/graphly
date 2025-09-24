@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
            // --- 4) Print all info into a table ---
-            showInfoGrid(metaArray, ['Columns','Type','Unique Values','Missing Values', 'Mean'], infoTable);
+            showInfoGrid(metaArray, ['Column','Type','Unique Values','Missing Values', 'Mean'], infoTable);
 
        }
     });
@@ -90,8 +90,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const cols = meta.fields;
 
     showDataGrid(data, cols, table);
-
- 
 });  
 
 
