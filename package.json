@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "apexcharts": "^4.5.0",
+    "gridjs": "^6.2.0",
     "papaparse": "^5.5.2"
   }
 }
