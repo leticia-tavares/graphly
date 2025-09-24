@@ -4,15 +4,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Load the dataset from the main process
     const dataset = await window.electronAPI.loadDataset();
     if (!dataset) {
-        const response = await window.electronAPI.showDialog({
-            type: 'info',
-            buttons: ['OK'],
-            title: 'Warning',
-            message: 'Please upload your dataset first.'
+      const response = await window.electronAPI.showDialog({
+          type: 'info',
+          buttons: ['OK'],
+          title: 'Warning',
+          message: 'Please upload your dataset first.'
           });
-        // console.log('Resposta do diálogo:', response);
-        window.electronAPI.navigate('index.html'); // Redirect to index.html
-        return;
+      window.electronAPI.navigate('index.html'); // Redirect to index.html
+      return;
     }
 
     // CSV Parsing 

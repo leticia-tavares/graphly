@@ -28,44 +28,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     let histogramChartInstance, correlationChartInstance, barsChartInstance, boxplotChartInstance;
 
     // Load the dataset from the main process
-    try {
-        const dataset = await window.electronAPI.loadDataset();
-        if (!dataset || !dataset.content) {
-            await window.electronAPI.showDialog({
-                type: 'info', buttons: ['OK'], title: 'Warning',
-                message: 'Please, upload a dataset first.',
-            });
-            window.electronAPI.navigate('index.html');
-            return; 
-        }
-
-        Papa.parse(dataset.content, {
-            header: true, 
-            dynamicTyping: true, 
-            skipEmptyLines: true, 
-            complete: (results) => {
-                fullData = results.data; 
-                allColumnNames = results.meta.fields; 
-
-                // Populates the dropdown with column names
-                columnSelectorDropdown.innerHTML = ""; 
-                allColumnNames.forEach(col => {
-                    const option = document.createElement("option");
-                    option.value = col;
-                    option.textContent = col;
-                    columnSelectorDropdown.appendChild(option);
-                });
-            },
-            error: (err) => {
-                console.error('Error parsing the CSV:', err);
-                alert('Error processing the CSV file. Please check the file format.');
-            }
+    const dataset = await window.electronAPI.loadDataset();
+    if (!dataset || !dataset.content) {
+        await window.electronAPI.showDialog({
+            type: 'info', buttons: ['OK'], title: 'Warning',
+            message: 'Please, upload a dataset first.',
         });
-    } catch (error) {
-        console.error("Error loading dataset via Electron API:", error);
-        alert("Unable to load the dataset.");
+        window.electronAPI.navigate('index.html');
         return; 
     }
+
+    Papa.parse(dataset.content, {
+        header: true, 
+        dynamicTyping: true, 
+        skipEmptyLines: true, 
+        complete: (results) => {
+            fullData = results.data; 
+            allColumnNames = results.meta.fields; 
+
+            // Populates the dropdown with column names
+            columnSelectorDropdown.innerHTML = ""; 
+            allColumnNames.forEach(col => {
+                const option = document.createElement("option");
+                option.value = col;
+                option.textContent = col;
+                columnSelectorDropdown.appendChild(option);
+            });
+        },
+        error: (err) => {
+            console.error('Error parsing the CSV:', err);
+            alert('Error processing the CSV file. Please check the file format.');
+        }
+    });
 
     // Initial selection of columns
     columnSelectorDropdown.addEventListener('change', (event) => {

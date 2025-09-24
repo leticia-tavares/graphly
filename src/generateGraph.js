@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const imgLouvain = document.getElementById('louvain-img');
 
   const excludeSelect = document.getElementById('exclude-columns');
-  const dataset = await window.electronAPI.loadDataset();
 
   const barsContainer = document.querySelector("#barras");
   let barsChartInstance;
@@ -42,6 +41,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let originalData = []; // Original data from the dataset
   let graphOBJ = {}; // Graph object from Python
   let louvainOBJ = {}; // Louvian object from Python
+
+  const dataset = await window.electronAPI.loadDataset();
 
   // Check if dataset is loaded
   if (!dataset || !dataset.content) {

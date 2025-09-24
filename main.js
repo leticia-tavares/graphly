@@ -5,29 +5,17 @@
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { resolvePy, createDirIfNotExists, deleteDir, copyDirContents } = require('./utils');
 const py = require('./bootstrap-python');
 
 // ----- Global Variables -----
-const dataCleanDir = path.join(app.getPath('userData'), 'data');
 let PYTHON_BIN;
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
 
 
-// Resolves the path to the script in the python/ folder (dev vs packaged)
-function resolvePy(relScript) {
-  const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
-  return path.join(root, 'python', relScript);
-}
-
 // Creating a directory to store any new data
-fs.mkdir(path.join(__dirname, 'data'), {recursive: true},(err) => {
-  if(err) {
-    return console.error(err);
-  }
-  dataDir = path.join(__dirname, 'data');
-  console.log("Directory successfuly created!");
-});
+createDirIfNotExists('data');
 
 /** 
 @brief Creates the main application window
@@ -190,22 +178,10 @@ function createWindow(){
 
 // Handle navigation request from the Renderer process
 ipcMain.on('navigate', (event, page) => {
-/*   let pathToPage = path.join(__dirname, `renderer/${page}`);
-  mainWindow.loadFile(pathToPage); */
-
-  console.log(`Navigating to: ${page}`);
   const pathToPage = path.join(__dirname, 'renderer', page);
   mainWindow.loadFile(pathToPage).catch(err => console.error(`Error when loading ${page}:`, err));
 });
 
-// Handle theme change request from Renderer
-ipcMain.on('set-theme', (event, theme) => {
-  if (theme === 'system') {
-    nativeTheme.themeSource = 'system';
-  } else {
-    nativeTheme.themeSource = theme;
-  }
-});
 
 // Handle file selection request from Renderer
 ipcMain.handle('select-file', async () => {
@@ -228,7 +204,7 @@ ipcMain.handle('select-file', async () => {
       dialog.showErrorBox('Error reading file.', err.message);
       return null;
     }
-  });
+});
 
 ipcMain.handle('show-dialog', async (event, dialogOptions) => {
   const result = await dialog.showMessageBox(dialogOptions);
@@ -270,27 +246,18 @@ ipcMain.handle('export-data', async () => {
     const files = fs.readdirSync(srcDir);
 
     if (!files.length) {
-      return { canceled: false, error: 'Nenhum arquivo encontrado no diretório /data.' };
+      return { canceled: false, error: 'No file found.'};
     }
 
     // pede para o usuário escolher a pasta de destino
     const { canceled, filePaths } = await dialog.showOpenDialog({
-      title: 'Escolha a pasta de destino',
+      title: 'Choose a folder to export the files',
       properties: ['openDirectory', 'createDirectory']
     });
     if (canceled) return { canceled: true };
 
-    const destDir = filePaths[0];
-    const results = [];
-
-    for (const filename of files) {
-      const src  = path.join(srcDir, filename);
-      const dest = path.join(destDir, filename);
-
-      // copia cada arquivo
-      fs.copyFileSync(src, dest);
-      results.push({ file: filename, ok: true });
-    }
+    // copia os arquivos para a pasta escolhida
+    const results = copyDirContents(srcDir, filePaths[0], files);
 
     return { canceled: false, results };
   } catch (err) {
@@ -324,10 +291,8 @@ app.whenReady().then(async () => {
     const { pythonBin } = await py.prepare({
       venvDirName: 'pyenv',
       requirementsFileName: 'requirements.txt',
-      wheelsDirName: 'wheels',      // inclua na build p/ offline
-      offline: false,               // mude para true se quiser forçar offline
-      // indexUrl: 'https://pypi.org/simple',
-      // extraIndexUrl: 'https://<mirror>/simple',
+      wheelsDirName: 'wheels',   
+      offline: false,               
     });
     PYTHON_BIN = pythonBin;
 
@@ -340,13 +305,7 @@ app.whenReady().then(async () => {
 
 // Cleanup data directory on exit
 app.on('before-quit', () => {
-  try {
-    //fs.rmSync(dataCleanDir, { recursive: true, force: true });
-    fs.rmSync(path.join(__dirname, 'data'), { recursive: true, force: true });
-    console.log('Data directory removed successfully:', dataDir);
-  } catch (err) {
-    console.error('Error removing data directory:', err);
-  }
+  deleteDir('data');
 });
 
 
