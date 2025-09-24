@@ -1,18 +1,20 @@
  // overview.js
 document.addEventListener('DOMContentLoaded', async () => {
+    const infoTable = document.getElementById('data-info');
+    const table = document.getElementById('data-preview');
+
 
     // Load the dataset from the main process
     const dataset = await window.electronAPI.loadDataset();
     if (!dataset) {
-        const response = await window.electronAPI.showDialog({
-            type: 'info',
-            buttons: ['OK'],
-            title: 'Warning',
-            message: 'Please upload your dataset first.'
+      const response = await window.electronAPI.showDialog({
+          type: 'info',
+          buttons: ['OK'],
+          title: 'Warning',
+          message: 'Please upload your dataset first.'
           });
-        // console.log('Resposta do diálogo:', response);
-        window.electronAPI.navigate('index.html'); // Redirect to index.html
-        return;
+      window.electronAPI.navigate('index.html'); // Redirect to index.html
+      return;
     }
 
     // CSV Parsing 
@@ -73,23 +75,23 @@ document.addEventListener('DOMContentLoaded', async () => {
               Column: col,
               Type: metadata[col].type,
               'Unique Values': metadata[col].uniqueValues,
-              'Missing Values': metadata[col].missingValues
+              'Missing Values': metadata[col].missingValues,
+              Mean: metadata[col].mean
             }));
 
-            const infoTable = document.getElementById('info-table');
 
            // --- 4) Print all info into a table ---
-            showInfoTable(metaArray, ['Column','Type','Unique Values','Missing Values'], infoTable);
+            showInfoGrid(metaArray, ['Column','Type','Unique Values','Missing Values', 'Mean'], infoTable);
+
        }
     });
 
     // Create the data table
-    const cols = meta.fields.slice(0,10); // get the first 10 columns
-    const table = document.getElementById('data-table');
+    const cols = meta.fields;
 
-    showDataTable(data, cols, table);
- 
+    showDataGrid(data, cols, table);
 });  
+
 
 /** 
 @brief This function displays the data in a table format.
@@ -100,47 +102,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 creates a header with the specified columns, and populates the body with the data. 
 It limits the number of rows displayed to 10 for performance reasons.
 */
-function showDataTable(data, cols, table){
+function showDataGrid(data, cols, table){
     table.innerHTML = ''; // clean the table content
 
-    // create the header
-    const thead = table.createTHead();
-    const hrow = thead.insertRow();
-
-    // insert the columns into the header
-    cols.forEach(col => {
-        const th = document.createElement('th');
-        th.textContent = col;
-        hrow.appendChild(th);
-    });
-
-    const th = document.createElement('th');
-    th.textContent = '...';
-    hrow.appendChild(th);
-
-    // create the body
-    const tbody = table.createTBody();
-
-    // insert the first 10 rows of data
-    data.slice(0,10).forEach(row => {
-        const tr = tbody.insertRow();
-        cols.forEach(col => {
-        const td = tr.insertCell();
-        td.textContent = row[col] ?? '';
-        });
-        const td = tr.insertCell();
-        td.textContent = '...';
-    });
-
-    const tr = tbody.insertRow();
-    cols.forEach(col => {
-        const td = tr.insertCell();
-        td.textContent = '...';
-    });
-
-    const td = tr.insertCell();
-    td.textContent = '...';
+    new gridjs.Grid({
+      columns: cols,
+      data: data.map(row => cols.map(col => row[col] ?? '')).slice(0, 10), // limit to 10 rows for performance
+      search: false,
+      sort: true,
+      pagination: {
+        enabled: true,
+        limit: 10
+      }
+    }).render(table);
 }
+
 
 /**
  * @brief This function displays the metadata information in a table format.
@@ -152,31 +128,19 @@ function showDataTable(data, cols, table){
  * It displays the column name, type, unique values, and missing values for each column.
  * It is used to provide an overview of the dataset's structure and quality.
  */
-function showInfoTable(data, cols, table){
+function showInfoGrid(data, cols, table){
     table.innerHTML = ''; // clean the table content
 
-    // create the header
-    const thead = table.createTHead();
-    const hrow = thead.insertRow();
-
-    // insert the columns into the header
-    cols.forEach(col => {
-        const th = document.createElement('th');
-        th.textContent = col;
-        hrow.appendChild(th);
-    });
-
-    // create the body
-    const tbody = table.createTBody();
-
-    // insert the data into the body
-    data.forEach(row => {
-        const tr = tbody.insertRow();
-        cols.forEach(col => {
-        const td = tr.insertCell();
-        td.textContent = row[col] ?? '';
-        });
-    });
+    new gridjs.Grid({
+      columns: cols,
+      data: data.map(row => cols.map(col => row[col] ?? '')),
+      search: false,
+      sort: true,
+      pagination: {
+        enabled: true,
+        limit: 10
+      }
+    }).render(table);
 }
 
 

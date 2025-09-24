@@ -472,7 +472,20 @@ select {
   margin: 1rem 0;
 }
 
-#weight-slider {
+.range-input p{
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.range-input h3{
+   font-size: 1.1rem;
+  font-weight: 600;
+  color: #0d47a1;
+  margin-bottom: 0.5rem;
+}
+
+.slider-primary {
   width: 250px;
   height: 6px;
   border-radius: 5px;
@@ -482,12 +495,12 @@ select {
   transition: background 0.3s;
 }
 
-#weight-slider:hover {
+.slider-primary:hover {
   background: linear-gradient(90deg, #4cafef, #0056b3);
 }
 
 /* Valor ao lado */
-#weight-value {
+.val-primary {
   font-weight: bold;
   font-size: 1rem;
   color: #007bff;

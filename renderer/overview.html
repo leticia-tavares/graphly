@@ -9,7 +9,9 @@
   <title>Graphly - Visualization</title>
   <!-- <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">  -->
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../node_modules/gridjs/dist/theme/mermaid.min.css">
   <script src="../node_modules/papaparse/papaparse.min.js"></script>
+  <script src="../node_modules/gridjs/dist/gridjs.umd.js"></script>
 </head>
 
 <body>
@@ -63,45 +65,13 @@
 
     <section class="section">
       <h2>🔍Data Preview</h2>
-      <div class="table-container">
-        <table id="data-table"></table>
-      </div> 
-<!--       
-      <h3>🔍 Data Preview</h3>
-      <div id="preview-table"></div>
-
-      <h3>📌 Column Information</h3>
-      <div id="info-table"></div> -->
+      <div id="data-preview"></div> 
     </section>
 
     <section class="section">
       <h2>📌Column Summary</h2>
-      <div class="table-container">
-        <table id="info-table"></table>
-      </div>
+      <div id="data-info"></div>
     </section>
-<!--       <h2>Data Statistics</h2>
-      <div id="statistics" class="section statistics">
-        <div class="statistic-card">
-          <h3>Mean</h3>
-          <p id="mean">Please upload your dataset first.</p>
-        </div>
-
-        <div class="statistic-card">
-          <h3>Median</h3>
-          <p id="median">Please upload your dataset first.</p>
-        </div>
-
-        <div class="statistic-card">
-          <h3>Standard Deviation</h3>
-          <p id="std-dev">Please upload your dataset first.</p>
-        </div>
-
-        <div class="statistic-card">
-          <h3>Variance</h3>
-          <p id="variance">Please upload your dataset first.</p>
-        </div> 
-      </div>-->
 
   </main>
 
