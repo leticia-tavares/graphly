@@ -3,7 +3,6 @@ const { spawnSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-
 const MIN_PY = [3, 11];
 
 // lazy require para não quebrar fora do Electron
@@ -30,18 +29,13 @@ function probe(cmd, args) {
   } catch { return null; }
 }
 
-// function getVersion(pythonBin) {
-//   const out = probe(pythonBin, ['-c', 'import sys;print(".".join(map(str,sys.version_info[:3])))']);
-//   if (!out) return null;
-//   return out.split('.').map(n => parseInt(n, 10));
-// }
-
 function getVersion(pythonBin) {
   const out = probe(pythonBin, ['-c', 'import sys;print(".".join(map(str,sys.version_info[:2])))']);
   if (!out) return null;
   const [maj, min] = out.split('.').map(n => parseInt(n, 10));
   return [maj, min];
 }
+
 function meetsMin(ver) {
   if (!ver) return false;
   const [a,b] = ver;
@@ -109,73 +103,11 @@ function locatePython({ overridePythonBin, configPythonBin } = {}) {
   );
 }
 
-// function locatePython() {
-//   // 1) Override via env
-//   const envPy = process.env.GRAPHLY_PYTHON;
-//   if (envPy && fs.existsSync(envPy)) return envPy;
-
-//   // 2) Windows launcher
-//   const pyPath = probe('py', ['-3', '-c', 'import sys;print(sys.executable)']);
-//   if (pyPath && fs.existsSync(pyPath)) return pyPath;
-
-//   // 3) python3/python
-//   for (const name of ['python3', 'python', 'python3.12', 'python3.11', 'python3.10']) {
-//     const p = probe(name, ['-c', 'import sys;print(sys.executable)']);
-//     if (p && fs.existsSync(p)) return p;
-//   }
-
-//   throw new Error(
-//     'Python 3 não encontrado. Instale Python 3.x (com Launcher no Windows) ou defina GRAPHLY_PYTHON.'
-//   );
-// }
-
-// function locatePython() {
-//   // 1) Override via env
-//   if (process.env.GRAPHLY_PYTHON && fs.existsSync(process.env.GRAPHLY_PYTHON)) {
-//     const v = getVersion(process.env.GRAPHLY_PYTHON);
-//     if (meetsMin(v)) return process.env.GRAPHLY_PYTHON;
-//   }
-
-//   // 2) Candidatos por ordem de preferência (mac: prioriza 3.12/3.11)
-//   const names = process.platform === 'win32'
-//     ? ['py -3.12', 'py -3.11', 'py -3.10', 'py -3'] // Windows Launcher
-//     : ['python3.12', 'python3.11', 'python3.10', 'python3', 'python'];
-
-//   for (const name of names) {
-//     const parts = name.split(' ');
-//     const exe = parts[0];
-//     const args = parts.slice(1).concat(['-c', 'import sys;print(sys.executable)']);
-//     const bin = probe(exe, args);
-//     if (bin && fs.existsSync(bin) && meetsMin(getVersion(bin))) {
-//       return bin;
-//     }
-//   }
-
-//   throw new Error(
-//     'Python ≥ 3.11 não encontrado.\n' +
-//     'Instale Python 3.12/3.11 e aponte a variável GRAPHLY_PYTHON para o executável.\n' +
-//     'macOS (Apple Silicon): /opt/homebrew/bin/python3.12\n' +
-//     'macOS (Intel):         /usr/local/bin/python3.12'
-//   );
-// }
-
 function venvPython(venvDir) {
   const isWin = process.platform === 'win32';
   return isWin ? path.join(venvDir, 'Scripts', 'python.exe')
                : path.join(venvDir, 'bin', 'python');
 }
-
-// function ensureVenv(venvDir) {
-//   const pyExe = locatePython();
-//   const marker = process.platform === 'win32' ? 'Scripts' : 'bin';
-//   if (!fs.existsSync(path.join(venvDir, marker))) {
-//     const r = spawnSync(pyExe, ['-m', 'venv', venvDir], { stdio: 'inherit' });
-//     if (r.status !== 0) throw new Error('Falha ao criar venv em ' + venvDir);
-//   }
-//   const pythonBin = venvPython(venvDir);
-//   if (!fs.existsSync(pythonBin)) throw new Error('Python do venv não encontrado.');
-//   return pythonBin;
-// }
 
 // 🔎 se o venv já existir mas com Python < 3.11, recria
 function ensureVenv(venvDir) {

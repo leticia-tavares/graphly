@@ -19,10 +19,10 @@ def communityDetection(graph: nx.Graph, study: int, save_csv: bool = True) -> tu
     Args:
         graph (nx.Graph): rede do dataset original
         study (int): índice do estudo
-        save_csv (bool, optional): opção de salvar o dataset. Defaults to True.
+        save_csv (bool, optional): opção de salvar o dataset
 
     Returns:
-        dfparticao: pd.DataFrame
+        df_partition: pd.DataFrame
         partition: dict
         json_louvain: dict
     """
@@ -38,6 +38,7 @@ def communityDetection(graph: nx.Graph, study: int, save_csv: bool = True) -> tu
     metrics.append(list(nx.load_centrality(graph, weight='weight').values()))
     metrics.append(list(nx.harmonic_centrality(graph).values()))
 
+    # cria dataframe com os resultados
     dfmetrics = pd.DataFrame(
         np.array(metrics).T.tolist(),
         columns=['C.grau','C.clustering','C.closeness','C.cf.closeness',
@@ -50,24 +51,23 @@ def communityDetection(graph: nx.Graph, study: int, save_csv: bool = True) -> tu
     partition = community_louvain.best_partition(graph, weight='weight') # dict com as comunidades
     dftemp = pd.DataFrame(list(partition.items()), columns=['Nodes','Community'])
 
-    qtdcomunidades = int(dftemp['Community'].max()) + 1
-    qtdelementos = [list(partition.values()).count(x) for x in range(qtdcomunidades)]
+    qty_communities = int(dftemp['Community'].max()) + 1
+    nodes_per_com = [list(partition.values()).count(x) for x in range(qty_communities)]
     
     json_louvain = {
-        "qtd_communities": qtdcomunidades,
-        "sizes": qtdelementos,
+        "qtd_communities": qty_communities,
+        "sizes": nodes_per_com,
         "modularity": community_louvain.modularity(partition, graph, weight='weight'),
     }
 
     # --- Saída (CSV) ---
-    dfparticao = pd.concat([dftemp.set_index('Nodes'), dfmetrics], axis=1)
+    df_partition = pd.concat([dftemp.set_index('Nodes'), dfmetrics], axis=1)
 
     if save_csv:
         fname = f"data/communities_{study}.csv"
-        dfparticao.to_csv(fname, index=True)
+        df_partition.to_csv(fname, index=True)
 
-    # Retorne também a figura, se quiser salvar PNG fora
-    return dfparticao, partition, json_louvain
+    return df_partition, partition, json_louvain
 
 
 def plot_communities(G: nx.Graph, title: str = "Rede", use_weight: bool = True, seed: int = 42, labels: bool = False, 
@@ -160,20 +160,17 @@ def plot_communities(G: nx.Graph, title: str = "Rede", use_weight: bool = True, 
 
 def main():
   
-    study = 0     # default
     studies = ['original', 'pca', 'yj', 'pca+yj']
 
-    if(len(sys.argv)) >= 2:
-        study = int(sys.argv[1])
+    study = int(sys.argv[1])
 
     with open('data/graph.gpickle', 'rb') as file:
         graph = pickle.load(file)
 
-    #  Chamada da função passando lim_inf
     df_communities, communities, res = communityDetection(graph, studies[study])
     plot_communities(graph, title=f"Communities - {studies[study]}", partition=communities ,labels=True, save_at=f"data/communities_{studies[study]}.png")
 
-    # louvian data to json 
+    # cria json com resultados
     json_louvian = json.dumps(res)
 
     qtd_communities = json.loads(json_louvian)["qtd_communities"]

@@ -47,14 +47,12 @@ def _installed(modname: str) -> bool:
         return False
     
 
-def ensure(pkgs: Dict[str, str],
-          extra_index_url: Optional[str] = None,
-          find_links: Optional[str] = None,
-          no_index: bool = False) -> None:
+def ensure(pkgs: Dict[str, str], extra_index_url: Optional[str] = None,
+          find_links: Optional[str] = None, no_index: bool = False) -> None:
     """
     Garante instalação (ou atualização) de pacotes.
     Args:
-        pkgs: dict {nome_modulo_ou_pacote: spec_version}, ex: {"pandas": ">=2.2"}
+        pkgs: dict {"pandas": ">=2.2"}
         extra_index_url: URL adicional para buscar pacotes (opcional)
         find_links: caminho local ou URL para buscar pacotes (opcional)
         no_index: se True, não usa o índice PyPI padrão (útil para ambientes offline)
