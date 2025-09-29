@@ -35,6 +35,7 @@ function getVersion(pythonBin) {
   const [maj, min] = out.split('.').map(n => parseInt(n, 10));
   return [maj, min];
 }
+
 function meetsMin(ver) {
   if (!ver) return false;
   const [a,b] = ver;

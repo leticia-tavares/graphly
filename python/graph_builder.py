@@ -7,12 +7,11 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
-from sklearn.decomposition import IncrementalPCA # reducao de dimensionalidade
-from sklearn.metrics.pairwise import cosine_similarity           # calculo de similaridade
-from sklearn.preprocessing import PowerTransformer
+from sklearn.decomposition import IncrementalPCA          # reducao de dimensionalidade
+from sklearn.metrics.pairwise import cosine_similarity    # calculo de similaridade
+from sklearn.preprocessing import PowerTransformer        # yeo-johnson 
 
-
-def applyPCA(data: pd.DataFrame, num_of_comp: int, var: float) -> pd.DataFrame:
+def applyPCA(data: pd.DataFrame, num_of_comp: int, var: float = 70.0) -> pd.DataFrame:
     """
     Função para aplicar PCA incremental em um dataframe de dados
 
@@ -29,19 +28,19 @@ def applyPCA(data: pd.DataFrame, num_of_comp: int, var: float) -> pd.DataFrame:
     temp_pca = pca.transform(data)
 
     pca_var = []
-    total_explicado = 0
-    qtd_final = 0
+    total_exp = 0
+    total_qty = 0
     
     # identifica a qtd de componentes que atendem a porcentagem minima de variancia total
     for comp in range(0, num_of_comp):
-        if total_explicado < var:
+        if total_exp < var:
             pca_var.append('componente' + str(comp))
-            total_explicado = total_explicado + pca.explained_variance_ratio_[comp]
-            qtd_final = qtd_final + 1
+            total_exp = total_exp + pca.explained_variance_ratio_[comp]
+            total_qty = total_qty + 1
         else: 
             comp = num_of_comp
             
-    df_pca = pd.DataFrame(temp_pca[:,0:qtd_final])
+    df_pca = pd.DataFrame(temp_pca[:,0:total_qty])
     df_pca.index = data.index
     df_pca.columns = [pca_var]
     
@@ -67,19 +66,21 @@ def powerTransformer(data: pd.DataFrame) -> pd.DataFrame:
     df_pt.index = data.index
     return df_pt
 
-def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: list[str], cos_sim = 0.5) -> tuple:
+def createGraph(base: pd.DataFrame, study: int, nodes: int, lim_inf = 0.5) -> tuple:
     """
     Cria o grafo a partir da base de dados transformada
     Args:
-        base (pd.Dataframe): _description_
-        study (int): _description_
-        neighborhoods (int): _description_
-        studies (str): _description_
-        cos_sim (float, optional): _description_. Defaults to 0.5.
+        base (pd.Dataframe): base de dados com estudo selecionado
+        study (int): identificador do estudo
+        nodes (int): numero inicial de registros
+        lim_inf (float, optional): filtro para criacao de arestas
 
     Returns:
         tuple: 
     """
+
+    # nomes dos estudos
+    studies = ['original', 'pca', 'yj', 'pca+yj']
     
     # pega a base de estudo a ser utilizada
     similarity = cosine_similarity(base, base)  # encontra similaridade global
@@ -89,15 +90,11 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
     df_sim.columns = base.index
     df_sim.index = base.index
     
-    sim_values = similarity[np.triu_indices(neighborhoods, k = 1)] #lista de valores de similaridade
+    # sim_values = similarity[np.triu_indices(nodes, k = 1)] #lista de valores de similaridade
     
-    for i in range(neighborhoods):
+    for i in range(nodes):
         similarity[i,i] = 0  # elimina futuras autoarestas
     
-    # corte das arestas baseado na estatistica descritiva
-    # lim_inf = pd.DataFrame(sim_values).describe().transpose()['75%'][0]  # limite inferior dos pesos das arestas
-    lim_inf = cos_sim
-
     # usa a similaridade passada como parametro
     similarity2 = np.where(similarity < lim_inf, 0, similarity)  # anula similaridades abaixo do limite
     adjacencias = np.where(similarity < lim_inf, 0, 1)           # cria matriz binaria de adjacencias 
@@ -118,7 +115,6 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
     if not nx.is_connected(graph):
         graph = max((graph.subgraph(c).copy() for c in nx.connected_components(graph)), key=len)
     
-    # Nome do arquivo baseado no estudo
     # arquivo_saida = f"data/grafo_{studies[study]}.png"
     graph_img = f"data/grafo.png"
 
@@ -131,50 +127,46 @@ def createGraph(base: pd.DataFrame, study: int, neighborhoods: int, studies: lis
         save_at=graph_img
     )
     
-    nodesCG = sorted(max(nx.connected_components(graph), key = len))  # bairros do componente gigante
-    gigante = graph.subgraph(nodesCG)  # cria subgrafo com esses bairros
+    nodesCG = sorted(max(nx.connected_components(graph), key = len))  # nós do componente gigante
+    gigante = graph.subgraph(nodesCG)  # cria subgrafo 
 
     graph_info = {
         "nodes": len(graph.nodes),
         "edges": len(graph.edges),
         "degree": sum(dict(graph.degree).values()) / len(graph.nodes)
     }
-
-    # similarityCG = nx.adjacency_matrix(gigante).todense()  # exporta a matriz de adjacencias do componente gigante
-    
-    # dfsimCG = pd.DataFrame(similarityCG)
-    # dfsimCG.columns = [list(nodesCG)]
-    # dfsimCG.index = [list(nodesCG)]
     
     return graph_info, gigante, graph
 
 
-def plot_graph(G: nx.Graph, title: str ="Rede", use_weight: bool = True, 
-               seed: int = 42, labels=False, save_at = None, dpi: int = 150) -> None:
+def plot_graph(graph: nx.Graph, title: str ="Network", use_weight: bool = True, 
+               seed: int = 42, labels=False, save_at = None) -> None:
     """
     Plota um grafo de forma simples e legível e opcionalmente salva como imagem.
     
-    Parâmetros:
-        G          : networkx.Graph
-        title     : título do gráfico
-        use_weight  : bool -> se True, usa atributo 'weight' no layout/tamanho de arestas
+    Args:
+        graph          : networkx.Graph
+        use_weight : bool -> se True, usa atributo 'weight' no layout/tamanho de arestas
         seed       : int  -> semente para reprodutibilidade do layout
-        labels    : bool -> se True, mostra rótulos dos nós
-        save_at  : str  -> caminho do arquivo PNG para salvar a figura (ex.: 'grafo.png')
-        dpi        : int  -> resolução da imagem salva
+        labels     : bool -> se True, mostra rótulos dos nós
+        save_at    : str  -> caminho do arquivo PNG para salvar a figura (ex.: 'grafo.png')
     """
-    pos = nx.spring_layout(G, weight='weight' if use_weight else None, seed=seed)
+
+    # Layout
+    pos = nx.spring_layout(graph, weight='weight' if use_weight else None, seed=seed)
 
     # Tamanho do nó via grau
-    grau = dict(G.degree(weight='weight') if use_weight else G.degree())
+    grau = dict(graph.degree(weight='weight') if use_weight else graph.degree())
     g_vals = np.array(list(grau.values()), dtype=float)
+
+    # normaliza e escala
     if g_vals.max() == 0:
         g_vals += 1.0
     tamanhos = 300 * (g_vals / g_vals.max()) + 50
 
     # Espessura da aresta via peso
     if use_weight:
-        w = np.array([G[u][v].get('weight',1.0) for u,v in G.edges()], dtype=float)
+        w = np.array([graph[u][v].get('weight',1.0) for u,v in graph.edges()], dtype=float)
         if w.max() == 0:
             w += 1.0
         widths = 2.0 * (w / w.max())
@@ -183,9 +175,9 @@ def plot_graph(G: nx.Graph, title: str ="Rede", use_weight: bool = True,
 
     # Plot
     fig, ax = plt.subplots(figsize=(9,7))
-    nx.draw_networkx_edges(G, pos, width=widths, alpha=0.25, ax=ax)
+    nx.draw_networkx_edges(graph, pos, width=widths, alpha=0.25, ax=ax)
     nx.draw_networkx_nodes(
-        G, pos,
+        graph, pos,
         node_size=tamanhos,
         node_color='skyblue',
         edgecolors='k',
@@ -194,7 +186,7 @@ def plot_graph(G: nx.Graph, title: str ="Rede", use_weight: bool = True,
     )
 
     if labels:
-        nx.draw_networkx_labels(G, pos, font_size=8, ax=ax)
+        nx.draw_networkx_labels(graph, pos, font_size=8, ax=ax)
 
     ax.set_title(title)
     ax.axis('off')
@@ -202,7 +194,7 @@ def plot_graph(G: nx.Graph, title: str ="Rede", use_weight: bool = True,
 
     # Salvar se solicitado
     if save_at:
-        plt.savefig(save_at, dpi=dpi, bbox_inches='tight')
+        plt.savefig(save_at, dpi=150, bbox_inches='tight')
 
 def apply_study(df: pd.DataFrame, study: int, num_of_comp: int = 15, min_var: int = 90) -> pd.DataFrame:
     """
@@ -225,8 +217,16 @@ def apply_study(df: pd.DataFrame, study: int, num_of_comp: int = 15, min_var: in
         return powerTransformer(df)  # yeo-johnson
     else:
         return applyPCA(powerTransformer(df), num_of_comp, min_var)  # pca + yeo-johnson
-    
+ 
 def check_first_column(path_csv: str) -> pd.DataFrame:
+    """
+    Verifica se a primeira coluna do CSV deve ser usada como índice
+    Args:
+        path_csv (str): caminho para o arquivo CSV
+
+    Returns:
+        pd.DataFrame: DataFrame com ou sem a primeira coluna como índice
+    """
 
     df = pd.read_csv(path_csv)
     first_col = df.columns[0]
@@ -244,44 +244,43 @@ def check_first_column(path_csv: str) -> pd.DataFrame:
 
     
 def main():
-    cos_sim = 0.5 # default
-    study = 0     # default
-    num_of_comp = 15 # default
-    min_var = 90     # default
 
-    # check to see if csv file exists
+    # verifica se o dataset filtrado existe
     try:
         with open('data/filtered_dataset.csv', 'r') as f:
-            # df = pd.read_csv('data/filtered_dataset.csv', index_col=0)
             df = check_first_column('data/filtered_dataset.csv')
             pass
     except FileNotFoundError:
         # lê o dataset original
         df = check_first_column('data/original_dataset.csv')
-        # df = pd.read_csv('data/original_dataset.csv', index_col=0)
-        # df = pd.read_csv('data/original_dataset.csv')
+
+    # pega o valor de colunas do dataset
+    num_of_comp = df.shape[1] - 1
+
+    # numero de registros
+    nodes = df.shape[0] 
+
+    min_var = 70.0 # valor padrao
 
 
+    # lê os parâmetros da linha de comando
+    data = sys.argv[1].strip('[]').split(',')
 
-    neighborhoods = df.shape[0] # number of neighborhoods
-    
-    studies = ['original', 'pca', 'yj', 'pca+yj']
+    cos_sim = float(data[0])
 
-    if(len(sys.argv)) >= 2:
-        data = sys.argv[1].strip('[]').split(',')
-        cos_sim = float(data[0])
-        study = int(data[1])
-        if study == 1 or study == 3:
-            num_of_comp = int(data[2])
-            min_var = int(data[3])
+    # checa o tipo de estudo e seus parâmetros
+    study = int(data[1])
+    if study == 1 or study == 3:
+        num_of_comp = int(data[2])
+        min_var = int(data[3])
 
     # cria a base de acordo com o estudo selecionado
     df_study = apply_study(df, study, num_of_comp, min_var)
 
     # constroi o grafo
-    res, gigante, graph = createGraph(df_study, study, neighborhoods, studies, cos_sim) 
+    res, gigante, graph = createGraph(df_study, study, nodes, cos_sim) 
 
-    # graph data to json
+    # pega os dados do grafo em formato json
     json_graph = json.dumps(res)
     nodes = json.loads(json_graph)["nodes"]
     edges = json.loads(json_graph)["edges"] 
@@ -296,6 +295,7 @@ def main():
         }
     }
     
+    # Salva o grafo em formato pickle
     with open('data/graph.gpickle', 'wb') as file:
         pickle.dump(gigante, file, pickle.HIGHEST_PROTOCOL)
 
