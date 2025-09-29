@@ -6,13 +6,9 @@ import pandas as pd
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import matplotlib as mpl
-from matplotlib.lines import Line2D
 
-from sklearn import metrics
-from sklearn.decomposition import PCA, IncrementalPCA, KernelPCA # reducao de dimensionalidade
+from sklearn.decomposition import IncrementalPCA # reducao de dimensionalidade
 from sklearn.metrics.pairwise import cosine_similarity           # calculo de similaridade
-from sklearn import preprocessing
 from sklearn.preprocessing import PowerTransformer
 
 
