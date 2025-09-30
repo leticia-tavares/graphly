@@ -64,12 +64,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     dynamicTyping: true,
     skipEmptyLines: true,
     complete: (results) => {
-      console.log('Resultados completos do PapaParse:', results);
-      
 
       const columns = results.meta.fields;
       originalColumns = [...columns]; // Guarda as colunas originais
-      console.log('Numero de colunas:', originalColumns.length);
+
       originalData = [...results.data]; // Guarda os dados originais
 
       if (columns.length < 2) {
@@ -91,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     },
     error: (err) => {
-      console.error('Erro ao fazer parsing do CSV:', err);
+      console.error('Error parsing CSV:', err);
     }
   });
 
@@ -209,13 +207,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 4) Gerar grafo quando clicar no botão
   generateBtn.addEventListener('click', async () => {
     let args = getArgsArray(cosSim, study);
+    let res;
     
     if(args.length > 0 ){
       try{
-        const res = await window.pythonAPI.run('graph_builder.py', [args]);
+        res = await window.pythonAPI.run('graph_builder.py', [args]);
 
         if (res.code !== 0) {
-          console.error('Python falhou:', res.stderr);
+          console.error('Python error:', res.stderr);
           return;
         } 
         try {
@@ -231,10 +230,10 @@ document.addEventListener('DOMContentLoaded', async () => {
           avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
 
         } catch (e) {
-          console.error('Stdout não é JSON válido:', res.stdout, e);
+          console.error('Stdout is not a valid JSON:', res.stdout, e);
         }
       } catch (e) {
-        console.error('Stdout não é JSON válido ou outra falha:', res.stdout, e);
+        console.error('Stdout error:', res.stdout, e);
       }
     } else {
         const response = await window.electronAPI.showDialog({
@@ -262,7 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await window.pythonAPI.run('louvain_method.py', [study.value]);
     
     if (res.code !== 0) {
-      console.error('Python falhou:', res.stderr);
+      console.error('Python fail:', res.stderr);
       return;
     } 
 
@@ -312,13 +311,12 @@ document.addEventListener('DOMContentLoaded', async () => {
    * @param {string} path 
    */
   async function createCSVFile(data, path){
-    // Gera CSV filtrado
+    // Create filtered dataset
     const csvOut = Papa.unparse(data);
 
-    // Caminho final: .../data/filtered_dataset.csv
     const outPath = await window.electronAPI.getPath(path);
 
-    // Garante diretório e grava arquivo
+    // Save file
     await window.electronAPI.writeFile(outPath, csvOut);
   }
 

@@ -5,7 +5,7 @@
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { resolvePy, createDirIfNotExists, deleteDir, copyDirContents } = require('./utils');
+const { createDirIfNotExists, deleteDir, copyDirContents } = require('./utils');
 const py = require('./bootstrap-python');
 
 // ----- Global Variables -----
@@ -13,6 +13,15 @@ let PYTHON_BIN;
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
 
+/**
+ * @brief Get the Python script's path
+ * @param {string} relScript 
+ * @returns file path
+ */
+function resolvePy(relScript) {
+  const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
+  return path.join(root, 'python', relScript);
+}
 
 // Creating a directory to store any new data
 createDirIfNotExists('data');

@@ -3,15 +3,7 @@ const fs = require('fs');
 const app = require('electron');
 
 
-/**
- * @brief Get the Python script's path
- * @param {string} relScript 
- * @returns file path
- */
-function resolvePy(relScript) {
-  const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
-  return path.join(root, 'python', relScript);
-}
+
 
 /**
  * @brief Create directory to store data 
@@ -63,7 +55,7 @@ function copyDirContents(srcDir, destDir, files){
     return results;
 }
 
-module.exports = { resolvePy, 
+module.exports = {  
     createDirIfNotExists, 
     deleteDir,
     copyDirContents,
