@@ -232,15 +232,14 @@ ipcMain.handle('load-dataset', () => {
   return null;
 });
 
-ipcMain.handle('get-path', (_e, relative) => {
-  // Salva dentro da pasta de dados do app (userData)
-  // Ex.: .../AppData/Roaming/SeuApp/data/filtered_dataset.csv
+ipcMain.handle('get-path', (event, relative) => {
+  
+  // Ex.: .../AppData/Roaming/App/data/filtered_dataset.csv
   const base = app.getPath('userData');
   return path.join(base, relative);
 });
 
-ipcMain.handle('write-file', async (_e, { filePath, content }) => {
-  await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+ipcMain.handle('write-file', async (event, { filePath, content }) => {
   await fs.promises.writeFile(filePath, content, 'utf8');
   return true;
 });

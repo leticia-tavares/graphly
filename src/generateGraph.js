@@ -209,39 +209,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     let args = getArgsArray(cosSim, study);
     let res;
     
-    if(args.length > 0 ){
-      try{
-        res = await window.pythonAPI.run('graph_builder.py', [args]);
+    try{
+      res = await window.pythonAPI.run('graph_builder.py', [args]);
 
-        if (res.code !== 0) {
-          console.error('Python error:', res.stderr);
-          return;
-        } 
-        try {
+      if (res.code !== 0) {
+        console.error('Python error:', res.stderr);
+        return;
+      } 
+      try {
 
-          imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
-          const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
+        imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
+        const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
 
-          graphOBJ = data.graph;  // <-- parse do objeto graph
-          louvainOBJ = data.louvain; // <-- parse do objeto louvian
+        graphOBJ = data.graph;  // <-- parse do objeto graph
+        louvainOBJ = data.louvain; // <-- parse do objeto louvian
 
-          totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
-          totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
-          avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
+        totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
+        totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
+        avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
 
-        } catch (e) {
-          console.error('Stdout is not a valid JSON:', res.stdout, e);
-        }
       } catch (e) {
-        console.error('Stdout error:', res.stdout, e);
+        console.error('Stdout is not a valid JSON:', res.stdout, e);
       }
-    } else {
-        const response = await window.electronAPI.showDialog({
-        type: 'info',
-        buttons: ['OK'],
-        title: 'Warning',
-        message: 'Please enter valid numbers.'
-      });
+    } catch (e) {
+      console.error('Stdout error:', res.stdout, e);
     }
   });
 
@@ -314,7 +305,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Create filtered dataset
     const csvOut = Papa.unparse(data);
 
-    const outPath = await window.electronAPI.getPath(path);
+    const outPath = await window.electronAPI.localPath(path);
 
     // Save file
     await window.electronAPI.writeFile(outPath, csvOut);
@@ -411,12 +402,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const numOfComp = numOfCompInput.value;
       const minVar = minVarInput.value;
 
-      if (!numOfComp >= (originalColumns.length - 1)) {
-        args = [];
+      args = [cosSim, study.value, numOfComp, minVar];
 
-      } else {
-        args = [cosSim, study.value, numOfComp, minVar];
-      }
     } else {
       args = [cosSim, study.value];
     }

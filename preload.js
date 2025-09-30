@@ -7,7 +7,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
-const { checkLoadedData } = require('./utils');
+
 
 // Expose protected methods that to the renderer process
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -15,7 +15,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPath: (relative) => ipcRenderer.invoke('get-path', relative),
   writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
   exportData: () => ipcRenderer.invoke('export-data'),
-  getPath: (name) => path.join(__dirname, name),
+  localPath: (name) => path.join(__dirname, name),
 
   // fs methods
   readText: async (path) => fs.promises.readFile(path, 'utf8'),
