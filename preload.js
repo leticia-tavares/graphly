@@ -15,14 +15,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getPath: (relative) => ipcRenderer.invoke('get-path', relative),
   writeFile: (filePath, content) => ipcRenderer.invoke('write-file', { filePath, content }),
   exportData: () => ipcRenderer.invoke('export-data'),
-
-  // path methodss
   getPath: (name) => path.join(__dirname, name),
 
   // fs methods
   readText: async (path) => fs.promises.readFile(path, 'utf8'),
-  readFile: (path) => fs.readFileSync(path, 'utf8'),  // síncrono
-  readFileAsync: (path) => fs.promises.readFile(path, 'utf8'), // assíncrono
+  readFile: (path) => fs.readFileSync(path, 'utf8'),
+  readFileAsync: (path) => fs.promises.readFile(path, 'utf8'), 
 
   // select file 
   selectFile: () => ipcRenderer.invoke('select-file'),

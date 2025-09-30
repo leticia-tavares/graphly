@@ -6,23 +6,12 @@
   --text-color: #333333;
 }
 
-[data-theme="dark"] {
-  --background-color: #1e1e1e;
-  --text-color: #ffffff;
-}
-
-[data-theme="system"] {
-  --background-color: auto;
-  --text-color: auto;
-}
-
 /* Estilos globais */
 body {
   background-color: var(--background-color);
   color: var(--text-color);
   transition: background 0.3s, color 0.3s;
   font-family: 'Inter', sans-serif;
-  /* font-family: 'Poppins', sans-serif; */
   line-height: 1.6;
 }
 
@@ -198,6 +187,7 @@ body {
     display: block;
     margin-bottom: 12px;
   }
+
   input[type="text"]:focus {
     border-color: #2196f3;
     box-shadow: 0 0 8px rgba(33, 150, 243, 0.5);
@@ -329,34 +319,6 @@ h2 {
   object-fit: contain; /* or contain */
 }
 
-
-/* Tabela */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-  font-size: 0.95rem;
-}
-
-th, td {
-  padding: 0.8rem;
-  text-align: center;
-  border: 1px solid #ddd;
-}
-
-th {
-  background-color: #0073e6;
-  color: #fff;
-}
-
-tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-tr:hover {
-  background-color: #e0f7fa;
-}
-
 /* CONTEÚDO PRINCIPAL */
 .main-content {
   flex: 1;
@@ -383,6 +345,7 @@ label {
   margin-bottom: 0.6rem;
   font-weight: 600;
 }
+
 /* Select */
 select {
   width: 100%;
@@ -522,8 +485,6 @@ select {
   color: #666;
 }
 
-
-
 /* Formulários */
 input[type="text"], input[type="number"], select {
   width: 100%;
@@ -539,7 +500,7 @@ input[type="text"], input[type="number"], select {
 #chart-config-area select { margin-bottom: 12px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; min-width: 180px; }
 .config-group { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
 .config-group:last-child { border-bottom: none; margin-bottom: 0;}
-.config-group br { display: none; } /* Esconde <br> se não for necessário */
+.config-group br { display: none; } 
 
 /* Footer */
 footer {
@@ -552,7 +513,6 @@ footer {
 }
 
 /* Importação de fontes */
-
 /* Poppins */
 @font-face {
   font-family: 'Poppins';

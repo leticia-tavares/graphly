@@ -1,14 +1,22 @@
 const path = require('path');
 const fs = require('fs');
-const {app, Menu, BrowserWindow, ipcMain, dialog} = require('electron');
+const app = require('electron');
 
 
-// Resolves the path to the script in the python/ folder (dev vs packaged)
+/**
+ * @brief Get the Python script's path
+ * @param {string} relScript 
+ * @returns file path
+ */
 function resolvePy(relScript) {
   const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
   return path.join(root, 'python', relScript);
 }
 
+/**
+ * @brief Create directory to store data 
+ * @param {string} dirName 
+ */
 function createDirIfNotExists(dirName) {
     fs.mkdir(path.join(__dirname, dirName), {recursive: true},(err) => {
       if(err) {
@@ -19,6 +27,10 @@ function createDirIfNotExists(dirName) {
     });
 }
 
+/**
+ * @brief Remove directory created to store data (/data)
+ * @param {string} dirName 
+ */
 function deleteDir(dirName) {
     try {
         //fs.rmSync(dataCleanDir, { recursive: true, force: true });
@@ -29,6 +41,13 @@ function deleteDir(dirName) {
     }
 }
 
+/**
+ * @brief Copy all contents from the directory
+ * @param {string} srcDir 
+ * @param {string} destDir 
+ * @param {Array} files 
+ * @returns results for each file
+ */
 function copyDirContents(srcDir, destDir, files){
     const results = [];
 

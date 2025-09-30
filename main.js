@@ -131,7 +131,6 @@ function createWindow(){
         {
           label: 'About',
           click() {
-            //console.log('Exibir informações sobre o aplicativo');
             dialog.showMessageBox({
               type: 'info',
               buttons: ['Ok'],
@@ -242,7 +241,6 @@ ipcMain.handle('export-data', async () => {
   try {
     const srcDir = path.join(__dirname, 'data');
 
-    // lista todos os arquivos dentro de /data
     const files = fs.readdirSync(srcDir);
 
     if (!files.length) {
@@ -297,9 +295,9 @@ app.whenReady().then(async () => {
     PYTHON_BIN = pythonBin;
 
     createWindow();
-  } catch (e) {
-    console.error('[Graphly] Erro preparando Python:', e);
-    dialog.showErrorBox('Python bootstrap falhou', String(e));
+  } catch (error) {
+    console.error('[Graphly] Erro preparando Python:', error);
+    dialog.showErrorBox('Python bootstrap fail:', String(error));
   }
 });
 
