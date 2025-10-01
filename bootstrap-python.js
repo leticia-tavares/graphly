@@ -3,25 +3,42 @@ const { spawnSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
+// versão mínima do Python
 const MIN_PY = [3, 11];
 
-// lazy require para não quebrar fora do Electron
+/** 
+ * Obtém a instância do Electron.app se disponível; retorna null ao rodar fora do Electron
+ * Útil para testes de novos scripts python diretamente no terminal!!!
+ */
 function getElectronApp() {
   try { return require('electron').app; } catch { return null; }
 }
 
+/**
+ * Retorna o diretório raiz da aplicação.
+ * Se estiver empacotada (isPackaged = true), usa process.resourcesPath
+ * Caso contrário, retorna o diretório de desenvolvimento (getAppPath)
+ * @returns 
+ */
 function getAppRoot() {
   const app = getElectronApp();
   if (app) return app.isPackaged ? process.resourcesPath : app.getAppPath();
-  // fallback fora do Electron (útil em testes)
+
   return process.cwd();
 }
-
+/**
+ * Obtém o diretório de dados do usuário.
+ * Dentro do Electron, usa app.getPath("userData").
+ * @returns 
+ */
 function getUserData() {
   const app = getElectronApp();
   return app ? app.getPath('userData') : path.join(process.cwd(), '.userData');
 }
 
+/** 
+ * Executa um comando (spawnSync) e retorna stdout/stderr
+ */
 function probe(cmd, args) {
   try {
     const r = spawnSync(cmd, args, { encoding: 'utf8' });
@@ -29,6 +46,10 @@ function probe(cmd, args) {
   } catch { return null; }
 }
 
+/** 
+ * Obtem a versao do python instalada
+ * python -c "import sys; print(major.minor)"
+ */
 function getVersion(pythonBin) {
   const out = probe(pythonBin, ['-c', 'import sys;print(".".join(map(str,sys.version_info[:2])))']);
   if (!out) return null;
@@ -36,12 +57,21 @@ function getVersion(pythonBin) {
   return [maj, min];
 }
 
+
+/** 
+ * Verifica se a versão detectada atende ao mínimo configurado em MIN_PY
+ */
 function meetsMin(ver) {
   if (!ver) return false;
   const [a,b] = ver;
   return a > MIN_PY[0] || (a === MIN_PY[0] && b >= MIN_PY[1]);
 }
 
+
+/**
+ *  Necessario para rodar no MacOS!
+ *  Caminhos prováveis de instalação do Python no macOS (Homebrew, Frameworks, pyenv)
+*/
 function knownMacCandidates() {
   const home = process.env.HOME || '';
   return [
@@ -60,9 +90,10 @@ function knownMacCandidates() {
   ];
 }
 
-/** Busca Python >=3.11.
- *  - overridePythonBin: caminho explícito (opcional)
- *  - configPythonBin: caminho salvo em JSON (opcional)
+
+/** 
+ * Função principal de localização do Python.
+ * tenta encontrar um binário Python >= 3.11 em diferentes cenários.
  */
 function locatePython({ overridePythonBin, configPythonBin } = {}) {
   const tryBins = [];
@@ -103,13 +134,20 @@ function locatePython({ overridePythonBin, configPythonBin } = {}) {
   );
 }
 
+/** 
+ * Dado o diretório do venv, retorna o caminho do executável Python
+ * Scripts\python.exe no Windows; bin/python no Unix
+*/
 function venvPython(venvDir) {
   const isWin = process.platform === 'win32';
   return isWin ? path.join(venvDir, 'Scripts', 'python.exe')
                : path.join(venvDir, 'bin', 'python');
 }
 
-// 🔎 se o venv já existir mas com Python < 3.11, recria
+/** 
+ * Garante que o venv exista. Caso não exista, cria com `python -m venv`  
+ * Isso é útil para testar em um novo OS
+*/
 function ensureVenv(venvDir) {
   const marker = process.platform === 'win32' ? 'Scripts' : 'bin';
   const exists = fs.existsSync(path.join(venvDir, marker));
@@ -129,6 +167,7 @@ function ensureVenv(venvDir) {
   return pythonBin;
 }
 
+/** Roda o `pip` (via `-m pip`) com ambiente controlado. */
 function runPip(pythonBin, args, opts = {}) {
   const env = {
     ...process.env,
@@ -146,17 +185,20 @@ function runPip(pythonBin, args, opts = {}) {
   return r.status === 0;
 }
 
+/** Atualiza pip, setuptools e wheel para versões recentes. */
 function upgradeCoreTools(pythonBin) {
   if (!runPip(pythonBin, ['install', '--upgrade', 'pip', 'setuptools', 'wheel'])) {
     throw new Error('Falha ao atualizar pip/setuptools/wheel.');
   }
 }
 
+/** Instala dependências: `pip install -r requirements.txt`. */
 function installRequirementsOnline(pythonBin, requirementsPath, opts={}) {
   const args = ['install', '--upgrade', '-r', requirementsPath];
   return runPip(pythonBin, args, opts);
 }
 
+/** Instala a partir do diretório /wheels (modo offline): `pip install --no-index --find-links`. */
 function installRequirementsOffline(pythonBin, requirementsPath, wheelsDir) {
   if (!wheelsDir || !fs.existsSync(wheelsDir)) return false;
   const args = [
@@ -167,10 +209,12 @@ function installRequirementsOffline(pythonBin, requirementsPath, wheelsDir) {
   return runPip(pythonBin, args);
 }
 
+/** Resolve o caminho absoluto para um arquivo localizado na raiz da aplicação. */
 function fileInAppRoot(fileName) {
   return path.join(getAppRoot(), fileName);
 }
 
+/** Resolve o caminho absoluto para um diretório localizado na raiz da aplicação. */
 function dirInAppRoot(dirName) {
   return path.join(getAppRoot(), dirName);
 }
@@ -215,6 +259,10 @@ async function prepare({
   return { pythonBin, venvDir, installed: ok };
 }
 
+/** 
+ * Executa um script Python (do app) com streaming de stdout/stderr; 
+ * retorna a ChildProcess para controle pelo caller. 
+ * */
 function runPython(pythonBin, scriptPath, args = [], { onData } = {}) {
   return new Promise((resolve, reject) => {
     const child = spawn(pythonBin, ['-u', scriptPath, ...args], { env: process.env });
@@ -255,3 +303,4 @@ module.exports = {
   runWithAutoDeps,
 };
 // End of bootstrap-python.js
+
