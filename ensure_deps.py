@@ -1,19 +1,5 @@
-# -*- coding: utf-8 -*-
 """
 Módulo utilitário para garantir dependências via pip em tempo de execução.
-Uso:
-    from ensure_deps import ensure
-    ensure({
-        "pandas": ">=2.2",
-        "numpy": ">=1.26",
-        "networkx": ">=3.3",
-        "scikit-learn": ">=1.5",
-        "matplotlib": ">=3.8",
-        "python-louvain": ">=0.16",
-    }, extra_index_url=None, find_links=None, no_index=False)
-
-Obs.: Para funcionar offline, empacote os wheels em uma pasta e chame:
-    ensure(pkgs, find_links="wheels", no_index=True)
 """
 import sys, subprocess, importlib
 from typing import Dict, Optional
