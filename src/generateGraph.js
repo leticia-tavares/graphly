@@ -35,12 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   let study = 'pca'; // default study
   let cosSim = 0;    // stores the cossine similarity threshold
   let fullData = []; // Stores all the parsed data from the CSV
-  let selectedItems = []; // Array para gerenciar os itens selecionados
+  let selectedItems = []; // Array to stores the columns selected
 
   let originalColumns = []; // Original columns from the dataset
   let originalData = []; // Original data from the dataset
-  let graphOBJ = {}; // Graph object from Python
-  let louvainOBJ = {}; // Louvian object from Python
+  let graphOBJ = {}; // Graph data from Python
+  let louvainOBJ = {}; // Louvian data from Python
 
   const dataset = await window.electronAPI.loadDataset();
 
@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       title: 'Warning',
       message: 'Please upload your dataset first.'
     });
-    console.log('Resposta do diálogo:', response);
-    window.electronAPI.navigate('index.html'); // Redireciona para upload
+ 
+    window.electronAPI.navigate('index.html'); // Redirect to index.html
     return;
   }
 
@@ -64,12 +64,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     dynamicTyping: true,
     skipEmptyLines: true,
     complete: (results) => {
-      console.log('Resultados completos do PapaParse:', results);
-      
 
       const columns = results.meta.fields;
       originalColumns = [...columns]; // Guarda as colunas originais
-      console.log('Numero de colunas:', originalColumns.length);
+
       originalData = [...results.data]; // Guarda os dados originais
 
       if (columns.length < 2) {
@@ -80,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       // Save the original dataset to /data/original_dataset.csv
       createCSVFile(originalData, 'data/original_dataset.csv');
 
-      excludeSelect.innerHTML = ""; // Limpa opções anteriores
+      excludeSelect.innerHTML = ""; 
 
       columns.forEach(col => {
         const option = document.createElement("option");
@@ -91,7 +89,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     },
     error: (err) => {
-      console.error('Erro ao fazer parsing do CSV:', err);
+      console.error('Error parsing CSV:', err);
     }
   });
 
@@ -209,40 +207,32 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 4) Gerar grafo quando clicar no botão
   generateBtn.addEventListener('click', async () => {
     let args = getArgsArray(cosSim, study);
+    let res;
     
-    if(args.length > 0 ){
-      try{
-        const res = await window.pythonAPI.run('graph_builder.py', [args]);
+    try{
+      res = await window.pythonAPI.run('graph_builder.py', [args]);
 
-        if (res.code !== 0) {
-          console.error('Python falhou:', res.stderr);
-          return;
-        } 
-        try {
+      if (res.code !== 0) {
+        console.error('Python error:', res.stderr);
+        return;
+      } 
+      try {
 
-          imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
-          const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
+        imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
+        const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
 
-          graphOBJ = data.graph;  // <-- parse do objeto graph
-          louvainOBJ = data.louvain; // <-- parse do objeto louvian
+        graphOBJ = data.graph;  // <-- parse do objeto graph
+        louvainOBJ = data.louvain; // <-- parse do objeto louvian
 
-          totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
-          totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
-          avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
+        totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
+        totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
+        avgDegreeCard.textContent = (graphOBJ.degree).toFixed(2) || 'N/A';
 
-        } catch (e) {
-          console.error('Stdout não é JSON válido:', res.stdout, e);
-        }
       } catch (e) {
-        console.error('Stdout não é JSON válido ou outra falha:', res.stdout, e);
+        console.error('Stdout is not a valid JSON:', res.stdout, e);
       }
-    } else {
-        const response = await window.electronAPI.showDialog({
-        type: 'info',
-        buttons: ['OK'],
-        title: 'Warning',
-        message: 'Please enter valid numbers.'
-      });
+    } catch (e) {
+      console.error('Stdout error:', res.stdout, e);
     }
   });
 
@@ -262,7 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await window.pythonAPI.run('louvain_method.py', [study.value]);
     
     if (res.code !== 0) {
-      console.error('Python falhou:', res.stderr);
+      console.error('Python fail:', res.stderr);
       return;
     } 
 
@@ -305,17 +295,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     alert('All files exported successfully!');
   });
 
+
+  /**
+   * @brief Create a new csv file using excluding selected columns
+   * @param {Object} data 
+   * @param {string} path 
+   */
   async function createCSVFile(data, path){
-    // Gera CSV filtrado
+    // Create filtered dataset
     const csvOut = Papa.unparse(data);
 
-    // Caminho final: .../data/filtered_dataset.csv
-    const outPath = await window.electronAPI.getPath(path);
+    const outPath = await window.electronAPI.localPath(path);
 
-    // Garante diretório e grava arquivo
+    // Save file
     await window.electronAPI.writeFile(outPath, csvOut);
   }
 
+
+  /**
+   * @brief Updates the array storing the selected columns
+   */
   function updateSelectedColumns() {
 
     // Verifica opções selecionadas e atualiza o array
@@ -329,6 +328,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderTags();
   }
 
+  /**
+   * @brief Create and display tags regarding user input
+   */
   function renderTags() {
     const selectedContainer = document.getElementById('selected-columns');
 
@@ -352,6 +354,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
   
+  /**
+   * @brief Create an Apexchart instance to show a bar chart with the number of nodes per community detected
+   */
   function renderCommunityChart(){
     const categories = Array.from({length: louvainOBJ.communities}, (_, i) => `Community ${i}`);
     const values = categories.map((_, i) => louvainOBJ.sizes[i] || 0);
@@ -380,6 +385,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         barsContainer.innerHTML = "";
   }
 
+  /**
+   * @brief Get all user's parameters to send to python (STDOUT) 
+   * @param {Number} cosSim 
+   * @param {Number} study 
+   * @returns {Array}
+   */
   function getArgsArray(cosSim, study) {
     let args = [];
     study = document.querySelector('input[name="study"]:checked');
@@ -391,12 +402,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       const numOfComp = numOfCompInput.value;
       const minVar = minVarInput.value;
 
-      if (!numOfComp >= (originalColumns.length - 1)) {
-        args = [];
+      args = [cosSim, study.value, numOfComp, minVar];
 
-      } else {
-        args = [cosSim, study.value, numOfComp, minVar];
-      }
     } else {
       args = [cosSim, study.value];
     }

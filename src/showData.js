@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const columns = results.meta.fields;     // column names
 
             if (!columns || columns.length === 0) {
-              return alert('Não foi possível identificar colunas no CSV.');
+              return alert('No columns identified.');
             }
   
             // --- Creating metada object ---

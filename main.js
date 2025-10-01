@@ -5,7 +5,7 @@
 const {app, Menu, BrowserWindow, ipcMain, dialog, nativeTheme} = require('electron');
 const path = require('path');
 const fs = require('fs');
-const { resolvePy, createDirIfNotExists, deleteDir, copyDirContents } = require('./utils');
+const { createDirIfNotExists, deleteDir, copyDirContents } = require('./utils');
 const py = require('./bootstrap-python');
 
 // ----- Global Variables -----
@@ -13,6 +13,15 @@ let PYTHON_BIN;
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
 
+/**
+ * @brief Get the Python script's path
+ * @param {string} relScript 
+ * @returns file path
+ */
+function resolvePy(relScript) {
+  const root = app.isPackaged ? process.resourcesPath : app.getAppPath();
+  return path.join(root, 'python', relScript);
+}
 
 // Creating a directory to store any new data
 createDirIfNotExists('data');
@@ -131,7 +140,6 @@ function createWindow(){
         {
           label: 'About',
           click() {
-            //console.log('Exibir informações sobre o aplicativo');
             dialog.showMessageBox({
               type: 'info',
               buttons: ['Ok'],
@@ -224,15 +232,14 @@ ipcMain.handle('load-dataset', () => {
   return null;
 });
 
-ipcMain.handle('get-path', (_e, relative) => {
-  // Salva dentro da pasta de dados do app (userData)
-  // Ex.: .../AppData/Roaming/SeuApp/data/filtered_dataset.csv
+ipcMain.handle('get-path', (event, relative) => {
+  
+  // Ex.: .../AppData/Roaming/App/data/filtered_dataset.csv
   const base = app.getPath('userData');
   return path.join(base, relative);
 });
 
-ipcMain.handle('write-file', async (_e, { filePath, content }) => {
-  await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+ipcMain.handle('write-file', async (event, { filePath, content }) => {
   await fs.promises.writeFile(filePath, content, 'utf8');
   return true;
 });
@@ -242,7 +249,6 @@ ipcMain.handle('export-data', async () => {
   try {
     const srcDir = path.join(__dirname, 'data');
 
-    // lista todos os arquivos dentro de /data
     const files = fs.readdirSync(srcDir);
 
     if (!files.length) {
@@ -297,9 +303,9 @@ app.whenReady().then(async () => {
     PYTHON_BIN = pythonBin;
 
     createWindow();
-  } catch (e) {
-    console.error('[Graphly] Erro preparando Python:', e);
-    dialog.showErrorBox('Python bootstrap falhou', String(e));
+  } catch (error) {
+    console.error('[Graphly] Erro preparando Python:', error);
+    dialog.showErrorBox('Python bootstrap fail:', String(error));
   }
 });
 

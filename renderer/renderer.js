@@ -5,7 +5,6 @@
 const selectButton = document.getElementById('select-file');
 const filePathDisplay = document.getElementById('upload-result');
 
-
 // Check if the elements exist before adding event listeners
 selectButton.addEventListener('click', async () => {
   const fileData = await window.electronAPI.selectFile();
@@ -15,7 +14,6 @@ selectButton.addEventListener('click', async () => {
     
     // save the dataset
     window.electronAPI.saveDataset(fileData);
-    console.log('Dataset salvo com sucesso:', fileData); 
 
     // load the ovewrview page
     window.electronAPI.navigate('overview.html');
@@ -30,7 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const overviewBtn = document.getElementById("nav-overview");
   const visualizationBtn = document.getElementById("nav-visualization");
   const graphsBtn = document.getElementById("nav-graphs");
-  const settingsBtn = document.getElementById("nav-settings");
 
   if (uploadBtn) {
     uploadBtn.addEventListener("click", () => {
@@ -53,12 +50,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (graphsBtn) {
     graphsBtn.addEventListener("click", () => {
       window.electronAPI.navigate("graphs.html");
-    });
-  }
-
-  if (settingsBtn) {
-    settingsBtn.addEventListener("click", () => {
-      window.electronAPI.navigate("settings.html");
     });
   }
 
