@@ -32,17 +32,16 @@ def applyPCA(data: pd.DataFrame, num_of_comp: int, var: float = 70.0) -> pd.Data
     total_qty = 0
     
     # identifica a qtd de componentes que atendem a porcentagem minima de variancia total
-    for comp in range(0, num_of_comp):
-        if total_exp < var:
-            pca_var.append('componente' + str(comp))
-            total_exp = total_exp + pca.explained_variance_ratio_[comp]
-            total_qty = total_qty + 1
-        else: 
-            comp = num_of_comp
+    for comp in range(num_of_comp):
+        if total_exp >= var:
+            break
+        pca_var.append('componente' + str(comp))
+        total_exp += pca.explained_variance_ratio_[comp]
+        total_qty += 1
             
     df_pca = pd.DataFrame(temp_pca[:,0:total_qty])
     df_pca.index = data.index
-    df_pca.columns = [pca_var]
+    df_pca.columns = pca_var
     
     return df_pca
 

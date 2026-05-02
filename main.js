@@ -10,6 +10,7 @@ const py = require('./bootstrap-python');
 
 // ----- Global Variables -----
 let PYTHON_BIN;
+let DATA_DIR;
 let mainWindow;           // stores the app main window
 let savedDataset = null;  // stores the dataset loaded by the user
 
@@ -23,10 +24,7 @@ function resolvePy(relScript) {
   return path.join(root, 'python', relScript);
 }
 
-// Creating a directory to store any new data
-createDirIfNotExists('data');
-
-/** 
+/**
 @brief Creates the main application window
 @details This function is called when the application is ready to create the main window.
          It sets the window's size, icon, web preferences, and loads the HTML file.
@@ -185,9 +183,14 @@ function createWindow(){
 
 
 // Handle navigation request from the Renderer process
+const ALLOWED_PAGES = new Set(['index.html', 'overview.html', 'visualization.html', 'graphs.html']);
 ipcMain.on('navigate', (event, page) => {
-  const pathToPage = path.join(__dirname, 'renderer', page);
-  mainWindow.loadFile(pathToPage).catch(err => console.error(`Error when loading ${page}:`, err));
+  if (!ALLOWED_PAGES.has(page)) {
+    console.error(`Navigation blocked: '${page}' is not an allowed page.`);
+    return;
+  }
+  mainWindow.loadFile(path.join(__dirname, 'renderer', page))
+    .catch(err => console.error(`Error loading ${page}:`, err));
 });
 
 
@@ -233,21 +236,23 @@ ipcMain.handle('load-dataset', () => {
 });
 
 ipcMain.handle('get-path', (event, relative) => {
-  
-  // Ex.: .../AppData/Roaming/App/data/filtered_dataset.csv
-  const base = app.getPath('userData');
-  return path.join(base, relative);
+  return path.join(DATA_DIR, relative);
 });
 
 ipcMain.handle('write-file', async (event, { filePath, content }) => {
-  await fs.promises.writeFile(filePath, content, 'utf8');
+  const resolved = path.resolve(filePath);
+  const allowed = path.resolve(DATA_DIR);
+  if (!resolved.startsWith(allowed + path.sep)) {
+    throw new Error('Write outside data directory is not allowed.');
+  }
+  await fs.promises.writeFile(resolved, content, 'utf8');
   return true;
 });
 
 // Exports all files from /data to a user-selected directory
 ipcMain.handle('export-data', async () => {
   try {
-    const srcDir = path.join(__dirname, 'data');
+    const srcDir = DATA_DIR;
 
     const files = fs.readdirSync(srcDir);
 
@@ -294,6 +299,9 @@ ipcMain.handle('python:run', async (event, relScript, args = []) => {
 // Application ready event
 app.whenReady().then(async () => {
   try {
+    DATA_DIR = path.join(__dirname, 'data');
+    await fs.promises.mkdir(DATA_DIR, { recursive: true });
+
     const { pythonBin } = await py.prepare({
       venvDirName: 'pyenv',
       requirementsFileName: 'requirements.txt',
@@ -311,12 +319,12 @@ app.whenReady().then(async () => {
 
 // Cleanup data directory on exit
 app.on('before-quit', () => {
-  deleteDir('data');
+  if (DATA_DIR) fs.rmSync(DATA_DIR, { recursive: true, force: true });
 });
 
 
 // Closes the application when all windows are closed as well 
-app.on('windows-all-closed', () => {
+app.on('window-all-closed', () => {
 
   if (process.platform !== 'darwin') {
     app.quit();

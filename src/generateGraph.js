@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const studies = ["original", "pca", "yj", "pca+yj"]; // Array to hold study options
   
   let study = 'pca'; // default study
-  let cosSim = 0;    // stores the cossine similarity threshold
+  let cosSim = slider.value;    // stores the cossine similarity threshold
   let fullData = []; // Stores all the parsed data from the CSV
   let selectedItems = []; // Array to stores the columns selected
 
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       // Save the original dataset to /data/original_dataset.csv
-      createCSVFile(originalData, 'data/original_dataset.csv');
+      createCSVFile(originalData, 'original_dataset.csv');
 
       excludeSelect.innerHTML = ""; 
 
@@ -95,12 +95,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 2) Lógica de seleção de colunas a excluir
   excludeSelect.addEventListener('change', updateSelectedColumns);
-  document.addEventListener('DOMContentLoaded', renderTags);
-  
+
   // 3) Exportar CSV filtrado para /data quando clicar no botão
   updateBtn.addEventListener('click', async () => {
-    alert(`Selected: ${selectedItems.join(', ') || 'No columns selected.'}`);
-
     try {
       const remainingColumns = originalColumns.filter(c => !selectedItems.includes(c));
 
@@ -121,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return out;
       });
 
-     createCSVFile(filteredRows, 'data/filtered_dataset.csv');
+     createCSVFile(filteredRows, 'filtered_dataset.csv');
 
     } catch (e) {
       console.error(e);
@@ -214,15 +211,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (res.code !== 0) {
         console.error('Python error:', res.stderr);
+        await window.electronAPI.showDialog({
+          type: 'error', buttons: ['OK'],
+          title: 'Graph Build Failed',
+          message: 'An error occurred while building the graph.',
+          detail: (res.stderr || '').slice(0, 600)
+        });
         return;
-      } 
+      }
       try {
 
         imgGraph.src = `../data/grafo.png?${new Date().getTime()}`; // Força reload da imagem
         const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
 
         graphOBJ = data.graph;  // <-- parse do objeto graph
-        louvainOBJ = data.louvain; // <-- parse do objeto louvian
 
         totalNodesCard.textContent = graphOBJ.nodes || 'N/A';
         totalEdgesCard.textContent = graphOBJ.edges || 'N/A';
@@ -243,21 +245,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     destroyCharts(); // Destroi gráficos anteriores, se existirem
 
     if (!graphOBJ || !graphOBJ.nodes) {
-      alert('Please generate the graph first.');
+      await window.electronAPI.showDialog({
+        type: 'warning', buttons: ['OK'],
+        title: 'Warning',
+        message: 'Please generate the graph first.'
+      });
       return;
     }
 
-    study = document.querySelector('input[name="study"]:checked');
+    const studyInput = document.querySelector('input[name="study"]:checked');
 
-    const res = await window.pythonAPI.run('louvain_method.py', [study.value]);
-    
+    const res = await window.pythonAPI.run('louvain_method.py', [studyInput.value]);
+
     if (res.code !== 0) {
       console.error('Python fail:', res.stderr);
+      await window.electronAPI.showDialog({
+        type: 'error', buttons: ['OK'],
+        title: 'Community Detection Failed',
+        message: 'An error occurred during community detection.',
+        detail: (res.stderr || '').slice(0, 600)
+      });
       return;
-    } 
+    }
 
     try {
-  
+
       const data = JSON.parse(res.stdout);   // <-- parse do JSON completo
       louvainOBJ = data.louvain; // <-- parse do objeto louvian
 
@@ -265,7 +277,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       commSizeCard.textContent = louvainOBJ.sizes || 'N/A';
       modularityCard.textContent = (louvainOBJ.modularity).toFixed(3) || 'N/A';
 
-      imgLouvain.src = `../data/communities_${studies[study.value]}.png?${new Date().getTime()}`; // Força reload da imagem
+      imgLouvain.src = `../data/communities_${studies[studyInput.value]}.png?${new Date().getTime()}`; // Força reload da imagem
 
       renderCommunityChart(fullData);
 
@@ -283,16 +295,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const result = await window.electronAPI.exportData();
 
     if (result.canceled) {
-      alert('Export canceled by user.');
+      await window.electronAPI.showDialog({ type: 'info', buttons: ['OK'], title: 'Export', message: 'Export canceled by user.' });
       return;
     }
     
     if (result.error) {
-      alert('Error: ' + result.error);
+      await window.electronAPI.showDialog({ type: 'error', buttons: ['OK'], title: 'Export Error', message: result.error || 'Unknown error during export.' });
       return;
     }
 
-    alert('All files exported successfully!');
+    await window.electronAPI.showDialog({ type: 'info', buttons: ['OK'], title: 'Export', message: 'All files exported successfully!' });
   });
 
 
@@ -305,7 +317,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Create filtered dataset
     const csvOut = Papa.unparse(data);
 
-    const outPath = await window.electronAPI.localPath(path);
+    const outPath = await window.electronAPI.getPath(path);
 
     // Save file
     await window.electronAPI.writeFile(outPath, csvOut);

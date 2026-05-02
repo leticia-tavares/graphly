@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs');
-const app = require('electron');
 
 
 
@@ -14,7 +13,6 @@ function createDirIfNotExists(dirName) {
       if(err) {
         return console.error(err);
       }
-      dataDir = path.join(__dirname, 'data');
       console.log("Directory successfuly created!");
     });
 }
